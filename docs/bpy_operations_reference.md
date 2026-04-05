@@ -1142,7 +1142,7 @@ bpy.data.objects.remove(counterbore)
 |-----------|-----|
 | **Organic sculpting via script** | Sculpt tools are interactive-only in practice. You can call operators but controlling brush strokes programmatically produces poor results. |
 | **Automatic support generation** | Slicer territory (PrusaSlicer/Cura). Blender has no built-in support generation. |
-| **Tolerance-aware assembly** | No parametric constraint system. You manually offset dimensions. Blender is not a CAD tool. |
+| **Parametric constraint system** | No auto-updating linked dimensions. Tolerance offsets are applied manually per part — BlenderAI automates this via system prompt rules for Prusa MK3 (0.25mm sliding, 0.15mm snug, 0.05mm press fit). |
 | **GD&T / dimensioning** | No measurement/annotation system for manufacturing. Use FreeCAD for this. |
 | **Adaptive mesh refinement** | Remesh modifier exists but it's global, not adaptive to feature size. |
 

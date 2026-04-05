@@ -156,6 +156,82 @@ Counterbore hole — through-hole + wider shallow pocket:
 Use two boolean DIFFERENCE operations: first a narrow cylinder through the
 full depth, then a wider cylinder at the surface for the counterbore pocket.
 
+## 3D Print Tolerances (Prusa MK3, 0.4mm nozzle)
+
+When creating multi-part assemblies, ALWAYS apply these tolerance offsets:
+
+| Fit Type | Clearance per side | Use case |
+|----------|-------------------|----------|
+| Sliding fit | 0.25mm (0.00025 BU) | Lid slides into box, drawer |
+| Snug fit | 0.15mm (0.00015 BU) | Parts that click together, removable caps |
+| Press fit | 0.05mm (0.00005 BU) | Permanent join, axle in hole |
+| Loose fit | 0.40mm (0.00040 BU) | Parts that must move freely, hinges |
+
+Clearance is PER SIDE. For a hole-and-peg pair, subtract from peg OR add to hole.
+
+Example — box with sliding-fit lid:
+CLEARANCE = 0.00025  # 0.25mm per side
+wall = 0.002  # 2mm walls
+ox, oy, oz = 0.04, 0.03, 0.02  # box outer 40x30x20mm
+lid_h = 0.005  # 5mm lid height
+lip = 0.003  # 3mm lip depth
+
+# Box (open top)
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, oz/2))
+box = bpy.context.active_object
+box.name = "Box"
+box.dimensions = (ox, oy, oz)
+bpy.ops.object.transform_apply(scale=True)
+mod = box.modifiers.new(name="Solidify", type='SOLIDIFY')
+mod.thickness = -wall
+mod.offset = -1
+mod.use_even_offset = True
+mod.use_rim = False
+bpy.ops.object.modifier_apply(modifier="Solidify")
+import bmesh
+bpy.ops.object.mode_set(mode='EDIT')
+bm = bmesh.from_edit_mesh(box.data)
+bm.faces.ensure_lookup_table()
+for f in bm.faces:
+    f.select = f.normal.z > 0.9 and f.calc_center_median().z > oz * 0.9
+bmesh.update_edit_mesh(box.data)
+bpy.ops.mesh.delete(type='FACE')
+bpy.ops.object.mode_set(mode='OBJECT')
+
+# Lid with lip (applies tolerance clearance)
+inner_x = ox - wall * 2 - CLEARANCE * 2
+inner_y = oy - wall * 2 - CLEARANCE * 2
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, oz + lid_h/2))
+lid = bpy.context.active_object
+lid.name = "Lid"
+lid.dimensions = (ox, oy, lid_h)
+bpy.ops.object.transform_apply(scale=True)
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, oz - lip/2))
+lip_part = bpy.context.active_object
+lip_part.dimensions = (inner_x, inner_y, lip)
+bpy.ops.object.transform_apply(scale=True)
+bpy.context.view_layer.objects.active = lid
+mod = lid.modifiers.new(name="bool_lip", type='BOOLEAN')
+mod.operation = 'UNION'
+mod.object = lip_part
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="bool_lip")
+bpy.data.objects.remove(lip_part)
+
+Example — peg and hole (snug fit):
+CLEARANCE = 0.00015  # 0.15mm per side, snug
+peg_r = 0.003  # 3mm radius peg
+hole_r = peg_r + CLEARANCE  # hole is slightly larger
+
+Rules:
+- When user says "lid", "cap", "cover" → use sliding fit (0.25mm)
+- When user says "snap", "click" → use snug fit (0.15mm)
+- When user says "press fit", "permanent" → use press fit (0.05mm)
+- When user says "hinge", "pivot", "loose" → use loose fit (0.40mm)
+- When user says "fit" without specifying → default to sliding fit (0.25mm)
+- Always place mating parts side by side (not overlapping) for separate printing
+- Always name parts clearly: "Box", "Lid", "Peg", "Socket"
+
 ## Mesh Cleanup (for 3D printing)
 
 Recalculate normals:

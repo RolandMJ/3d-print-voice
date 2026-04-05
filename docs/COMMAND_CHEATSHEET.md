@@ -84,6 +84,34 @@ strength at corners.
 | "create a slot 20mm long 3mm wide 2mm deep on top" | Groove cut into surface |
 | "create a counterbore hole M5 with 10mm head 3mm deep" | Screw hole with pocket |
 
+## Multi-Part Assemblies (Tolerance Fits)
+
+When you create parts that fit together, the AI automatically applies
+clearance offsets so they actually fit off the printer. These values are
+tuned for the Prusa MK3 with a 0.4mm nozzle.
+
+| Say this | Fit type | Clearance/side |
+|----------|----------|---------------|
+| "create a box with lid" | Sliding fit | 0.25mm |
+| "create a snap-fit cap for it" | Snug fit | 0.15mm |
+| "create a press-fit peg and hole" | Press fit | 0.05mm |
+| "create a hinge pin and socket" | Loose fit | 0.40mm |
+| "create a lid that fits this box" | Sliding fit | 0.25mm |
+
+**What are these numbers?** When you 3D print two parts that should fit
+together, the printer is not perfectly precise. A 10mm peg into a 10mm hole
+won't fit — you need the hole to be slightly bigger (or the peg slightly
+smaller). The clearance is that extra space:
+
+- **Sliding fit (0.25mm):** Parts slide smoothly. Lids, drawers, sleeves.
+- **Snug fit (0.15mm):** Parts click together with light pressure. Caps, covers.
+- **Press fit (0.05mm):** Parts require force to assemble. Permanent joins.
+- **Loose fit (0.40mm):** Parts move freely. Hinges, pivots, bearings.
+
+The AI applies the right clearance automatically based on your words. If you
+say "lid" or "cover," it uses sliding fit. If you say "snap" or "click," it
+uses snug fit. You can also be explicit: "use 0.3mm clearance per side."
+
 ## 3D Print Preparation
 
 | Say this | What it does |
@@ -131,9 +159,10 @@ These operations are very hard to automate and may produce unreliable results:
 
 - Organic sculpting (freeform clay-like modeling)
 - Precise threading (use heat-set inserts for printed parts instead)
-- Complex assemblies with tolerance fits
+- Auto-updating parametric constraints (changing one dimension won't auto-update linked parts)
 - Lofting between arbitrary profiles
 - Selecting specific individual faces by visual appearance
 
-For parametric/engineering CAD, consider FreeCAD. BlenderAI excels at
-quick shape creation, boolean-based part building, and 3D print preparation.
+For fully parametric engineering CAD, consider FreeCAD. BlenderAI excels at
+quick shape creation, boolean-based part building, multi-part assemblies
+with print-ready tolerances, and 3D print preparation.
