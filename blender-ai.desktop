@@ -2,10 +2,10 @@
 Version=1.0
 Type=Application
 Name=BlenderAI
-Comment=AI-powered natural language interface for Blender
-Exec=bash -c 'cd "$HOME/Documents/Claude Projects/blender-ai" && gnome-terminal -- bash -c "./launcher.sh; exec bash"'
+Comment=AI-powered voice and text interface for Blender
+Exec=bash -c 'cd "$HOME/Documents/Claude Projects/blender-ai" && ./launcher.sh'
 Icon=blender
-Terminal=false
+Terminal=true
 Categories=Graphics;3DGraphics;Development;
 Keywords=blender;ai;3d;modeling;voice;
 StartupNotify=true

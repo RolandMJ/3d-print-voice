@@ -3,6 +3,25 @@
 All notable changes to BlenderAI are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-04-05
+
+### Added
+- GUI control bar (agent/app.py) — Blender-themed top bar with text and voice input
+- Voice input module (agent/voice.py) — faster-whisper on CUDA with silence detection
+- Mic toggle: click to record, auto-stops after 1.5s silence, transcribes, sends
+- Live status panel: Blender/Ollama/Mic connection dots, VRAM usage, command count
+- F1 global hotkey for mic toggle
+- Prusa MK3 tolerance rules for multi-part assemblies (sliding/snug/press/loose fit)
+- 30+ bpy operation recipes in system prompt (hollowing, booleans, bevels, shapes)
+- Command cheat sheet (docs/COMMAND_CHEATSHEET.md)
+- Full bpy operations reference (docs/bpy_operations_reference.md)
+
+### Changed
+- Launcher now starts GUI control bar instead of terminal loop
+- Terminal mode (agent/main.py) preserved as fallback for headless use
+- System prompt expanded from 8 to 30+ operation examples
+- Desktop file updated for GUI mode
+
 ## [0.2.0] - 2026-04-05
 
 ### Added

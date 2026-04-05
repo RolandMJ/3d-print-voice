@@ -109,13 +109,14 @@ if ! curl -sf http://localhost:6789/health >/dev/null 2>&1; then
 fi
 echo "[BlenderAI] Blender is ready."
 
-# --- Launch the agent ---
-echo ""
-echo "============================================"
-echo "  BlenderAI — Ready"
-echo "  Type commands for Blender. 'quit' to exit."
-echo "============================================"
-echo ""
-
+# --- Launch the control bar ---
+echo "[BlenderAI] Starting control bar..."
 cd "$PROJECT_DIR"
-python3 -m agent.main
+
+# Use GUI mode by default, fall back to terminal if no display
+if [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; then
+    python3 -m agent.app
+else
+    echo "[BlenderAI] No display found, falling back to terminal mode."
+    python3 -m agent.main
+fi

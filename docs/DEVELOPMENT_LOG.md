@@ -7,6 +7,54 @@ Each entry records what was built, why, and what decisions were made.
 
 ---
 
+## 2026-04-05 — GUI Control Bar + Voice Input (v0.3.0)
+
+### What Was Built
+
+GUI control bar replacing the terminal interface. Blender-themed dark UI
+(`#2D2D2D` background, orange `#E87D0D` accents) positioned at the top of
+the screen, full width, always on top.
+
+Voice input via faster-whisper (small.en model) running on CUDA. Toggle
+recording with a mic button — auto-stops after 1.5 seconds of silence,
+transcribes speech to text, and sends the command through the normal pipeline.
+
+### Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Tkinter for GUI | Built into Python, zero extra dependencies, lightweight |
+| Top bar (not floating window) | Doesn't compete with Blender for screen space |
+| Toggle mic (not hold-to-talk) | Hands-free once activated, auto-stop on silence |
+| faster-whisper small.en on CUDA | ~1GB VRAM, 0.5s load time, good accuracy for commands |
+| Status panel with VRAM | User needs to know system health at a glance |
+| Background whisper preload | First voice command is fast — model loaded at startup |
+| F1 global hotkey | Can toggle mic even when Blender is focused |
+
+### UX Layout
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ [MIC] [___________ command input field ___________] [SEND] │ ● Blender │
+│       [___________ last command → result _________]        │ ● Ollama  │
+│                                                            │ ● Mic     │
+│                                                            │ VRAM 10/12│
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### Operation Vocabulary Expansion
+
+System prompt expanded from 8 basic examples to 30+ operation recipes.
+This was driven by a user test where "make this cylinder hollow" failed —
+the local 14B model didn't know the Solidify modifier pattern. Adding
+explicit recipes for all common operations resolved this class of failures.
+
+Also added Prusa MK3 printer tolerance rules (0.25mm sliding fit, 0.15mm
+snug, 0.05mm press fit, 0.40mm loose fit) so multi-part assemblies come
+off the printer with correct clearances.
+
+---
+
 ## 2026-04-05 — Project Inception and Phase 1 Implementation
 
 ### Concept Origin
