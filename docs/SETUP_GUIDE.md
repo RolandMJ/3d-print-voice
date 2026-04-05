@@ -1,204 +1,199 @@
 # BlenderAI — Complete Setup Guide (Beginner-Friendly)
 
-This guide walks you through every step needed to get BlenderAI running on your
-machine. No prior experience with Python projects or Blender addons is assumed.
+This guide walks you through every step needed to get BlenderAI running on
+your machine. No prior experience with Python projects or Blender addons
+is assumed.
 
 ---
 
 ## What You Need Before Starting
 
-| Requirement | You Have |
-|------------|----------|
+| Requirement | Status |
+|------------|--------|
 | Blender 5.1.0 | Installed (system-wide) |
 | Python 3.12 | Installed |
-| NVIDIA GPU with CUDA | RTX 5070 (ready) |
-| Anthropic API key | You need one — see Step 1 |
-| Terminal access | Yes (Bash on Linux) |
+| NVIDIA GPU with CUDA (RTX 5070) | Ready |
+| Corsair VOID ELITE headset w/ mic | Connected |
+| Internet connection | Only needed for first-time setup (downloads) |
+
+After setup, BlenderAI runs completely offline. No cloud services, no API
+keys, no ongoing costs.
 
 ---
 
-## Step 1: Get Your Anthropic API Key
+## Step 1: Install Ollama (the Local AI Engine)
 
-The AI brain behind BlenderAI is Claude (made by Anthropic). To talk to Claude,
-you need an API key — think of it as a password that lets your code use Claude.
-
-1. Open your browser and go to: https://console.anthropic.com/
-2. Log in (or create an account if you don't have one)
-3. Click **"API Keys"** in the left sidebar
-4. Click **"Create Key"**
-5. Give it a name like "blender-ai"
-6. Copy the key — it starts with `sk-ant-...`
-7. **Keep this key secret.** Never share it, never commit it to git.
-
-**Why:** Claude is a paid API. Each time you type a command, BlenderAI sends
-your text to Claude, and Claude sends back Python code. The API key is how
-Anthropic knows it's you and bills your account. Usage for this project is
-very cheap — a few cents per session.
-
----
-
-## Step 2: Create Your .env File
-
-The `.env` file stores your API key locally so the code can use it without
-you having to type it every time.
+Ollama is a program that runs AI models on your computer. Think of it as a
+"server" for AI — it loads the model into your GPU and answers questions.
 
 1. Open a terminal
-2. Navigate to the project folder:
+2. Run:
    ```bash
-   cd ~/Documents/Claude\ Projects/blender-ai
+   curl -fsSL https://ollama.com/install.sh | sudo sh
    ```
-3. Copy the example file:
+3. Enter your password when asked
+4. Verify it installed:
    ```bash
-   cp .env.example .env
+   ollama --version
    ```
-4. Open the new `.env` file in a text editor:
-   ```bash
-   nano .env
-   ```
-   (or use any editor you prefer — `gedit .env`, `code .env`, etc.)
-5. Replace the placeholder with your real key:
-   ```
-   ANTHROPIC_API_KEY=YOUR_API_KEY_HERE
-   ```
-6. Save and close (in nano: Ctrl+O, Enter, Ctrl+X)
+   You should see a version number.
 
-**Why:** We keep the key in a separate `.env` file (not in the code) so it
-never accidentally gets shared. The `.gitignore` file ensures `.env` is never
-uploaded to GitHub.
+**Why Ollama?** It handles all the complexity of running AI models locally —
+GPU memory management, model loading, API compatibility. Without it, you'd
+need to manually set up CUDA libraries, model formats, and inference servers.
+
+---
+
+## Step 2: Download the AI Model
+
+The AI model is the "brain" that translates your English into Blender code.
+We use Qwen2.5-Coder 14B — a model specifically trained for writing code.
+
+1. Run:
+   ```bash
+   ollama pull qwen2.5-coder:14b-instruct
+   ```
+2. This downloads about **9GB**. It only happens once — after that, the model
+   lives on your hard drive.
+3. Verify it's there:
+   ```bash
+   ollama list
+   ```
+   You should see `qwen2.5-coder:14b-instruct` in the list.
+
+**Why this model?** It's the strongest coding model that fits in your GPU's
+12GB of memory. It was specifically trained on code (not just general text),
+so it writes better Python than general-purpose models of the same size.
 
 ---
 
 ## Step 3: Install Python Dependencies
 
-The agent (the part that runs in your terminal) needs two Python libraries:
-- `anthropic` — the official library to talk to Claude's API
-- `python-dotenv` — reads your `.env` file automatically
-
-1. In the terminal, make sure you're in the project folder:
+1. Navigate to the project folder:
    ```bash
    cd ~/Documents/Claude\ Projects/blender-ai
    ```
-2. Install the dependencies:
+2. Install:
    ```bash
    pip install -r requirements.txt --break-system-packages
    ```
-   (The `--break-system-packages` flag is needed on Ubuntu/Mint because the
-   system Python is managed by the OS. This is safe for our use case.)
 
-**Why:** Python doesn't come with everything pre-installed. `pip` is Python's
-package manager — like an app store for code libraries. The `requirements.txt`
-file lists exactly what we need, so anyone can reproduce the setup.
+This installs:
+- **sounddevice** — captures audio from your Corsair headset microphone
+- **faster-whisper** — converts your speech to text using your GPU
+
+**Why `--break-system-packages`?** Ubuntu/Mint manages Python packages
+carefully. This flag tells pip it's OK to install alongside system packages.
+It's safe for our use.
 
 ---
 
 ## Step 4: Install the Blender Addon
 
-The addon is a small Python script that runs *inside* Blender. It opens a
-door (an HTTP server) so our external agent can send commands to Blender.
+The addon is a plugin that runs inside Blender. It creates a "door" (HTTP
+server) that lets our AI agent send commands to Blender.
 
-1. **Open Blender** (double-click the Blender icon, or type `blender` in terminal)
+1. **Open Blender** (type `blender` in terminal, or use the app menu)
 
 2. **Open Preferences:**
-   - Look at the very top menu bar of Blender
-   - Click **Edit** (second item from the left)
-   - Click **Preferences...** (near the bottom of the dropdown)
-   - A new window opens — this is Blender's settings panel
+   - Top menu bar → click **Edit**
+   - Click **Preferences...** (near the bottom)
 
-3. **Go to the Add-ons section:**
-   - In the Preferences window, look at the left sidebar
-   - Click **Get Extensions** (the puzzle piece icon, or it may say "Add-ons"
-     depending on your Blender version)
-   - If you see "Get Extensions", look for a dropdown/menu button (▾) near
-     the top right and click **Install from Disk...**
-   - If you see "Add-ons" directly, click the **Install...** button at the
-     top right
+3. **Go to Add-ons:**
+   - In the Preferences window, left sidebar → **Get Extensions**
+   - Look for a dropdown/menu button (▾) near top right
+   - Click **Install from Disk...**
 
 4. **Navigate to the addon file:**
-   - A file browser opens
-   - Navigate to: `Documents/Claude Projects/blender-ai/addon/`
+   - Go to: `Documents/Claude Projects/blender-ai/addon/`
    - Select `ai_bridge.py`
-   - Click **Install from Disk** (or **Install Add-on**)
+   - Click **Install from Disk**
 
 5. **Enable the addon:**
-   - After installing, you should see "AI Bridge" appear in the list
-   - Make sure the **checkbox next to it is checked** (ticked)
-   - You should see a message in Blender's terminal/console:
+   - Find "AI Bridge" in the list
+   - Check the **checkbox** next to it
+   - You should see in Blender's console:
      ```
      [AI Bridge] HTTP server listening on 127.0.0.1:6789
      [AI Bridge] Addon registered
      ```
 
-6. **Verify it works:**
-   - Open a new terminal (separate from Blender)
-   - Run:
-     ```bash
-     curl http://127.0.0.1:6789/health
-     ```
-   - You should see: `{"status": "ok"}`
-   - If you see "Connection refused", the addon isn't running — go back and
-     make sure it's enabled
+6. **Verify:**
+   ```bash
+   curl http://127.0.0.1:6789/health
+   ```
+   Should return: `{"status": "ok"}`
 
-**Why:** Blender has its own isolated Python environment. We can't import
-Blender's `bpy` library from outside. Instead, we run a tiny web server
-*inside* Blender that listens for commands. Our external agent sends HTTP
-requests to this server, and the server executes the code in Blender's
-context. It's like sending a letter to someone inside a building — the
-HTTP server is the mailbox.
+**Why an addon?** Blender has its own isolated Python environment. We can't
+control Blender from outside without this bridge. The addon is the mailbox —
+our agent sends letters (code), and the addon delivers them to Blender.
 
 ---
 
 ## Step 5: Run BlenderAI
 
-Now the fun part — actually using it.
+### Option A: The Launcher (Recommended)
 
-1. **Make sure Blender is open** with the AI Bridge addon enabled (Step 4)
+The launcher starts everything automatically:
 
-2. Open a **separate terminal** (this is important — Blender runs in one
-   terminal/window, the agent runs in another)
+```bash
+cd ~/Documents/Claude\ Projects/blender-ai
+./launcher.sh
+```
 
-3. Navigate to the project:
+It will:
+1. Start Ollama (if not running)
+2. Warm up the AI model
+3. Open Blender with the addon
+4. Show the `>>>` command prompt
+
+### Option B: Desktop Icon
+
+For double-click launch from your desktop:
+
+```bash
+cp ~/Documents/Claude\ Projects/blender-ai/blender-ai.desktop ~/.local/share/applications/
+```
+
+Now "BlenderAI" appears in your app menu.
+
+### Option C: Manual Start (each component separately)
+
+If you prefer to control each piece:
+
+1. Start Ollama: `ollama serve` (or it may already be running as a service)
+2. Open Blender with addon enabled
+3. In a separate terminal:
    ```bash
    cd ~/Documents/Claude\ Projects/blender-ai
-   ```
-
-4. Start the agent:
-   ```bash
    python3 -m agent.main
    ```
 
-5. You should see:
-   ```
-   BlenderAI — Phase 1 (text mode)
-   Type a command for Blender. 'quit' to exit.
+---
 
-   >>>
-   ```
+## Step 6: Try Your First Command
 
-6. **Try your first command — type:**
-   ```
-   create a 40mm cube
-   ```
+With BlenderAI running, type at the `>>>` prompt:
 
-7. **What happens next:**
-   - The agent sends your text to Claude
-   - Claude generates Python code (shown in your terminal)
-   - The code is sent to Blender via HTTP
-   - A cube appears in Blender's 3D viewport
-   - Terminal shows "Done."
+```
+create a 40mm cube
+```
 
-8. **Try more commands:**
-   ```
-   delete everything in the scene
-   create a sphere with radius 20mm
-   create a cylinder 10mm radius 50mm tall
-   move the cylinder up by 30mm
-   ```
+What happens:
+1. Your text goes to the local AI model
+2. The model generates: `bpy.ops.mesh.primitive_cube_add(size=0.04)`
+3. The code is sent to Blender
+4. A cube appears in the 3D viewport
 
-9. **To quit:** type `quit`, `exit`, or `q` (or press Ctrl+C)
+Try more:
+```
+delete everything in the scene
+create a sphere with radius 20mm
+create a cylinder 10mm radius 50mm tall
+move the cylinder up by 30mm
+```
 
-**Why:** We run the agent as a Python module (`python3 -m agent.main`) rather
-than a script (`python3 agent/main.py`) because it properly handles the
-package imports between files.
+To quit: type `quit`, `exit`, or press Ctrl+C.
 
 ---
 
@@ -206,24 +201,29 @@ package imports between files.
 
 ### "Cannot reach Blender addon"
 - Is Blender open?
-- Is the addon enabled? (Check Edit → Preferences → Add-ons → AI Bridge is ticked)
-- Try the health check: `curl http://127.0.0.1:6789/health`
+- Is the addon enabled? (Edit → Preferences → Add-ons → AI Bridge is ticked)
+- Test: `curl http://127.0.0.1:6789/health`
 
-### "Claude API error"
-- Is your `.env` file in the project root (not inside `agent/`)?
-- Does it contain `ANTHROPIC_API_KEY=sk-ant-...` (no quotes, no spaces)?
-- Does your Anthropic account have credits?
+### "LLM error: Connection refused"
+- Is Ollama running? Test: `curl http://localhost:11434/api/tags`
+- Start it: `ollama serve`
+- Is the model pulled? `ollama list` should show `qwen2.5-coder:14b-instruct`
 
-### "No module named 'agent'"
-- Make sure you're running from the project root directory
-- Use `python3 -m agent.main`, not `python3 agent/main.py`
+### Model generates bad code / code fails
+- This is expected occasionally with local models
+- The system automatically retries once with error context
+- Try rephrasing your command more specifically
+- Simple commands work best: "create a cube", "move it up"
 
-### Cube appears but in the wrong place
-- Blender uses meters. 40mm = 0.04 meters in Blender. This is normal.
-- Zoom in/out with the scroll wheel to see small objects.
+### First command is very slow
+- Normal — the model takes 10-20 seconds to load into GPU on first request
+- Subsequent commands are much faster (2-5 seconds)
+- The launcher pre-warms the model to avoid this
 
 ### Nothing visible in Blender viewport
-- Press Numpad `.` (period) to zoom to the selected object
 - Press `Home` key to see everything in the scene
-- Check if you're in the right view — press `Numpad 0` for camera view,
-  or `Numpad 5` to toggle perspective/orthographic
+- Press Numpad `.` to zoom to selected object
+- Objects are in meters — a 40mm cube is small. Zoom in.
+
+### Undo a command
+- Press **Ctrl+Z** in Blender — each AI command is an undoable step

@@ -21,126 +21,124 @@
   <rect width="900" height="720" rx="12" fill="#f8fafc"/>
 
   <!-- Title -->
-  <text x="450" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">BlenderAI Architecture — Phase 1</text>
-  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#64748b">How your typed command becomes a 3D object in Blender</text>
+  <text x="450" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">BlenderAI Architecture — Fully Local</text>
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#64748b">Everything runs on your machine. No internet. No cloud. No cost.</text>
 
-  <!-- ============================================ -->
-  <!-- USER (You) -->
-  <!-- ============================================ -->
-  <rect x="340" y="90" width="220" height="60" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
-  <text x="450" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">You (Terminal)</text>
-  <text x="450" y="136" text-anchor="middle" font-size="11" fill="#3b82f6">Type: "create a 40mm cube"</text>
+  <!-- GPU Badge -->
+  <rect x="630" y="80" width="240" height="45" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="750" y="99" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">RTX 5070 — 12GB VRAM</text>
+  <text x="750" y="115" text-anchor="middle" font-size="10" fill="#b45309">LLM ~9GB + Whisper ~1GB + Blender ~1GB</text>
+
+  <!-- USER -->
+  <rect x="340" y="80" width="220" height="55" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="450" y="103" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">You (Terminal)</text>
+  <text x="450" y="121" text-anchor="middle" font-size="11" fill="#3b82f6">Type or speak a command</text>
 
   <!-- Arrow: User → main.py -->
-  <line x1="450" y1="150" x2="450" y2="185" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="462" y="173" font-size="10" fill="#64748b">text input</text>
+  <line x1="450" y1="135" x2="450" y2="175" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
 
-  <!-- ============================================ -->
-  <!-- AGENT BOX (your computer, outside Blender) -->
-  <!-- ============================================ -->
-  <rect x="60" y="190" width="780" height="250" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="80" y="212" font-size="12" font-weight="bold" fill="#166534">AGENT (runs in your terminal — Python 3.12)</text>
+  <!-- AGENT BOX -->
+  <rect x="60" y="180" width="780" height="240" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="80" y="202" font-size="12" font-weight="bold" fill="#166534">AGENT (runs in your terminal — Python 3.12)</text>
 
   <!-- main.py -->
-  <rect x="340" y="225" width="220" height="55" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="2" filter="url(#shadow)"/>
-  <text x="450" y="250" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">agent/main.py</text>
-  <text x="450" y="268" text-anchor="middle" font-size="10" fill="#4ade80">Conductor — coordinates everything</text>
+  <rect x="340" y="215" width="220" height="50" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="2" filter="url(#shadow)"/>
+  <text x="450" y="238" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">agent/main.py</text>
+  <text x="450" y="254" text-anchor="middle" font-size="10" fill="#4ade80">Conductor + error retry loop</text>
 
-  <!-- Arrow: main.py → claude_client.py -->
-  <line x1="340" y1="260" x2="235" y2="330" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
-  <text x="250" y="290" font-size="10" fill="#2563eb">1. sends your text</text>
+  <!-- Arrow: main.py → llm_client.py -->
+  <line x1="340" y1="248" x2="235" y2="310" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <text x="248" y="278" font-size="10" fill="#2563eb">1. user text</text>
 
-  <!-- claude_client.py -->
-  <rect x="80" y="310" width="220" height="55" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
-  <text x="190" y="335" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">agent/claude_client.py</text>
-  <text x="190" y="353" text-anchor="middle" font-size="10" fill="#60a5fa">Talks to Claude API</text>
+  <!-- llm_client.py -->
+  <rect x="80" y="295" width="220" height="50" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="190" y="318" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">agent/llm_client.py</text>
+  <text x="190" y="334" text-anchor="middle" font-size="10" fill="#60a5fa">Ollama client + code extractor</text>
 
-  <!-- Arrow: claude_client.py → main.py (back) -->
-  <line x1="235" y1="310" x2="340" y2="275" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)" stroke-dasharray="5,3"/>
-  <text x="250" y="308" font-size="10" fill="#2563eb">2. returns bpy code</text>
+  <!-- Arrow back: llm_client → main.py -->
+  <line x1="235" y1="295" x2="340" y2="262" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)" stroke-dasharray="5,3"/>
+  <text x="248" y="293" font-size="10" fill="#2563eb">2. clean bpy code</text>
 
   <!-- blender_client.py -->
-  <rect x="600" y="310" width="220" height="55" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="2" filter="url(#shadow)"/>
-  <text x="710" y="335" text-anchor="middle" font-size="14" font-weight="bold" fill="#c2410c">agent/blender_client.py</text>
-  <text x="710" y="353" text-anchor="middle" font-size="10" fill="#fb923c">Sends code to Blender</text>
+  <rect x="600" y="295" width="220" height="50" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="710" y="318" text-anchor="middle" font-size="14" font-weight="bold" fill="#c2410c">agent/blender_client.py</text>
+  <text x="710" y="334" text-anchor="middle" font-size="10" fill="#fb923c">HTTP client to Blender</text>
 
-  <!-- Arrow: main.py → blender_client.py -->
-  <line x1="560" y1="260" x2="660" y2="310" stroke="#ea580c" stroke-width="2" marker-end="url(#arrow-orange)"/>
-  <text x="590" y="275" font-size="10" fill="#ea580c">3. passes bpy code</text>
+  <!-- Arrow: main.py → blender_client -->
+  <line x1="560" y1="248" x2="660" y2="295" stroke="#ea580c" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <text x="588" y="262" font-size="10" fill="#ea580c">3. bpy code</text>
 
-  <!-- Arrow: blender_client.py → main.py (back) -->
-  <line x1="660" y1="310" x2="560" y2="275" stroke="#ea580c" stroke-width="2" marker-end="url(#arrow-orange)" stroke-dasharray="5,3"/>
-  <text x="625" y="308" font-size="10" fill="#ea580c">6. result</text>
+  <!-- Arrow back -->
+  <line x1="660" y1="295" x2="560" y2="262" stroke="#ea580c" stroke-width="2" marker-end="url(#arrow-orange)" stroke-dasharray="5,3"/>
+  <text x="625" y="292" font-size="10" fill="#ea580c">6. result</text>
 
   <!-- Log file -->
-  <rect x="340" y="385" width="220" height="40" rx="6" fill="#fefce8" stroke="#eab308" stroke-width="1.5"/>
-  <text x="450" y="410" text-anchor="middle" font-size="11" fill="#a16207">logs/session_2026-04-05.log (every command logged)</text>
-  <line x1="450" y1="280" x2="450" y2="385" stroke="#eab308" stroke-width="1" stroke-dasharray="3,3"/>
+  <rect x="340" y="370" width="220" height="35" rx="6" fill="#fefce8" stroke="#eab308" stroke-width="1.5"/>
+  <text x="450" y="393" text-anchor="middle" font-size="10" fill="#a16207">logs/session_YYYY-MM-DD.log (every command logged)</text>
+  <line x1="450" y1="265" x2="450" y2="370" stroke="#eab308" stroke-width="1" stroke-dasharray="3,3"/>
 
-  <!-- ============================================ -->
-  <!-- CLAUDE API (Internet) -->
-  <!-- ============================================ -->
-  <rect x="30" y="480" width="280" height="80" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="2" filter="url(#shadow)"/>
-  <text x="170" y="510" text-anchor="middle" font-size="15" font-weight="bold" fill="#5b21b6">Claude API (Anthropic)</text>
-  <text x="170" y="528" text-anchor="middle" font-size="11" fill="#8b5cf6">claude-sonnet-4-20250514</text>
-  <text x="170" y="546" text-anchor="middle" font-size="10" fill="#a78bfa">Reads system.md instructions</text>
+  <!-- OLLAMA BOX (local!) -->
+  <rect x="30" y="460" width="280" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="170" y="485" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">Ollama (localhost:11434)</text>
+  <text x="170" y="505" text-anchor="middle" font-size="12" fill="#3b82f6">Qwen2.5-Coder 14B</text>
+  <text x="170" y="522" text-anchor="middle" font-size="10" fill="#60a5fa">~9GB VRAM on your GPU</text>
+  <text x="170" y="548" text-anchor="middle" font-size="10" font-weight="bold" fill="#16a34a">100% LOCAL — no internet</text>
 
-  <!-- Arrow: claude_client → Claude API -->
-  <line x1="190" y1="365" x2="170" y2="480" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="120" y="420" font-size="10" fill="#7c3aed">HTTPS (internet)</text>
+  <!-- Arrow: llm_client → Ollama -->
+  <line x1="190" y1="345" x2="170" y2="460" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <text x="120" y="400" font-size="10" fill="#2563eb">localhost HTTP</text>
 
-  <!-- system.md floating near Claude -->
-  <rect x="30" y="575" width="180" height="35" rx="5" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1"/>
-  <text x="120" y="597" text-anchor="middle" font-size="10" fill="#6d28d9">prompts/system.md (bpy rules)</text>
-  <line x1="120" y1="575" x2="140" y2="560" stroke="#c4b5fd" stroke-width="1" stroke-dasharray="3,2"/>
+  <!-- system.md floating -->
+  <rect x="30" y="575" width="180" height="30" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="120" y="595" text-anchor="middle" font-size="10" fill="#2563eb">prompts/system.md (bpy rules)</text>
+  <line x1="120" y1="575" x2="140" y2="560" stroke="#93c5fd" stroke-width="1" stroke-dasharray="3,2"/>
 
-  <!-- ============================================ -->
-  <!-- HTTP CONNECTION (between agent and Blender) -->
-  <!-- ============================================ -->
-  <line x1="710" y1="365" x2="710" y2="480" stroke="#ea580c" stroke-width="2.5" marker-end="url(#arrow-orange)"/>
-  <rect x="640" y="410" width="140" height="35" rx="5" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
-  <text x="710" y="425" text-anchor="middle" font-size="10" font-weight="bold" fill="#c2410c">HTTP POST</text>
-  <text x="710" y="438" text-anchor="middle" font-size="9" fill="#ea580c">localhost:6789/execute</text>
+  <!-- HTTP to Blender -->
+  <line x1="710" y1="345" x2="710" y2="460" stroke="#ea580c" stroke-width="2.5" marker-end="url(#arrow-orange)"/>
+  <rect x="640" y="390" width="140" height="35" rx="5" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
+  <text x="710" y="405" text-anchor="middle" font-size="10" font-weight="bold" fill="#c2410c">HTTP POST</text>
+  <text x="710" y="418" text-anchor="middle" font-size="9" fill="#ea580c">localhost:6789/execute</text>
 
-  <!-- Arrow back: Blender → blender_client -->
-  <line x1="740" y1="480" x2="740" y2="365" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)" stroke-dasharray="5,3"/>
-  <text x="755" y="430" font-size="10" fill="#16a34a">JSON result</text>
+  <!-- JSON back -->
+  <line x1="740" y1="460" x2="740" y2="345" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)" stroke-dasharray="5,3"/>
+  <text x="755" y="410" font-size="10" fill="#16a34a">JSON result</text>
 
-  <!-- ============================================ -->
   <!-- BLENDER BOX -->
-  <!-- ============================================ -->
-  <rect x="500" y="480" width="370" height="220" rx="12" fill="#fff1f2" stroke="#f87171" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="520" y="502" font-size="12" font-weight="bold" fill="#991b1b">BLENDER 5.1 (separate application)</text>
+  <rect x="500" y="460" width="370" height="220" rx="12" fill="#fff1f2" stroke="#f87171" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="520" y="482" font-size="12" font-weight="bold" fill="#991b1b">BLENDER 5.1 (separate application)</text>
 
   <!-- ai_bridge.py -->
-  <rect x="540" y="515" width="280" height="55" rx="8" fill="#ffffff" stroke="#ef4444" stroke-width="2" filter="url(#shadow)"/>
-  <text x="680" y="540" text-anchor="middle" font-size="14" font-weight="bold" fill="#b91c1c">addon/ai_bridge.py</text>
-  <text x="680" y="558" text-anchor="middle" font-size="10" fill="#f87171">HTTP server + bpy exec on main thread</text>
+  <rect x="540" y="495" width="280" height="50" rx="8" fill="#ffffff" stroke="#ef4444" stroke-width="2" filter="url(#shadow)"/>
+  <text x="680" y="517" text-anchor="middle" font-size="14" font-weight="bold" fill="#b91c1c">addon/ai_bridge.py</text>
+  <text x="680" y="534" text-anchor="middle" font-size="10" fill="#f87171">HTTP server + undo_push + bpy exec</text>
 
-  <!-- Internal flow inside Blender -->
-  <rect x="540" y="590" width="130" height="40" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
-  <text x="605" y="607" text-anchor="middle" font-size="10" fill="#dc2626">Command Queue</text>
-  <text x="605" y="620" text-anchor="middle" font-size="9" fill="#f87171">thread-safe</text>
+  <!-- Internal flow -->
+  <rect x="540" y="565" width="130" height="40" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="605" y="582" text-anchor="middle" font-size="10" fill="#dc2626">Command Queue</text>
+  <text x="605" y="595" text-anchor="middle" font-size="9" fill="#f87171">thread-safe</text>
 
-  <rect x="690" y="590" width="130" height="40" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
-  <text x="755" y="607" text-anchor="middle" font-size="10" fill="#dc2626">bpy.app.timers</text>
-  <text x="755" y="620" text-anchor="middle" font-size="9" fill="#f87171">exec() on main thread</text>
+  <rect x="690" y="565" width="130" height="40" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="755" y="582" text-anchor="middle" font-size="10" fill="#dc2626">bpy.app.timers</text>
+  <text x="755" y="595" text-anchor="middle" font-size="9" fill="#f87171">undo + exec on main thread</text>
 
-  <line x1="670" y1="610" x2="690" y2="610" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="670" y1="585" x2="690" y2="585" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrow)"/>
 
   <!-- Viewport -->
-  <rect x="590" y="648" width="220" height="40" rx="8" fill="#fecdd3" stroke="#e11d48" stroke-width="2"/>
-  <text x="700" y="673" text-anchor="middle" font-size="13" font-weight="bold" fill="#9f1239">3D Viewport</text>
+  <rect x="590" y="625" width="220" height="40" rx="8" fill="#fecdd3" stroke="#e11d48" stroke-width="2"/>
+  <text x="700" y="650" text-anchor="middle" font-size="13" font-weight="bold" fill="#9f1239">3D Viewport (Ctrl+Z = undo)</text>
 
-  <line x1="755" y1="630" x2="720" y2="648" stroke="#e11d48" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="758" y="644" font-size="9" fill="#e11d48">object appears</text>
+  <line x1="755" y1="605" x2="720" y2="625" stroke="#e11d48" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <!-- ============================================ -->
-  <!-- NUMBERED FLOW SUMMARY -->
-  <!-- ============================================ -->
-  <rect x="30" y="635" width="400" height="75" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="50" y="655" font-size="11" font-weight="bold" fill="#334155">Data Flow Summary:</text>
-  <text x="50" y="672" font-size="10" fill="#475569">1. You type "create a 40mm cube"</text>
-  <text x="50" y="685" font-size="10" fill="#475569">2. Claude returns: bpy.ops.mesh.primitive_cube_add(size=0.04)</text>
-  <text x="50" y="698" font-size="10" fill="#475569">3. Code sent to Blender via HTTP  4. Blender executes  5. Cube appears</text>
+  <!-- SUMMARY BOX -->
+  <rect x="30" y="625" width="440" height="80" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="50" y="645" font-size="11" font-weight="bold" fill="#166534">Data Flow (all localhost, no internet):</text>
+  <text x="50" y="662" font-size="10" fill="#475569">1. You type "create a 40mm cube"</text>
+  <text x="50" y="676" font-size="10" fill="#475569">2. Ollama + Qwen2.5-Coder returns: bpy.ops.mesh.primitive_cube_add(size=0.04)</text>
+  <text x="50" y="690" font-size="10" fill="#475569">3. Code sent to Blender → undo point saved → executed → cube appears</text>
+
+  <!-- LAUNCHER note -->
+  <rect x="30" y="80" width="240" height="55" rx="8" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="150" y="102" text-anchor="middle" font-size="12" font-weight="bold" fill="#6d28d9">launcher.sh</text>
+  <text x="150" y="118" text-anchor="middle" font-size="10" fill="#8b5cf6">Starts Ollama + Blender + Agent</text>
+  <text x="150" y="130" text-anchor="middle" font-size="10" fill="#8b5cf6">Stops all on exit</text>
 </svg>

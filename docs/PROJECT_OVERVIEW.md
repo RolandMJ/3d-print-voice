@@ -8,7 +8,7 @@ steep learning curve. You need to learn dozens of menus, keyboard shortcuts,
 and concepts just to make a simple box.
 
 **BlenderAI lets you skip all that.** Instead of learning Blender's interface,
-you just type what you want in plain English:
+you just type (or say) what you want in plain English:
 
     "create a 40mm cube"
     "make it taller"
@@ -16,21 +16,22 @@ you just type what you want in plain English:
 
 And the object appears (or changes) in Blender, right in front of you.
 
-Behind the scenes, an AI (Claude) translates your English into Blender's
+Behind the scenes, a local AI model translates your English into Blender's
 programming language (Python/bpy), and sends it to Blender to execute.
+Everything runs on your computer — no internet, no cloud, no cost per use.
 
 ---
 
 ## How It Works — The Simple Version
 
-Think of it like a translator at a restaurant in a foreign country:
+Think of it like having a bilingual assistant sitting next to you:
 
-1. **You** say what you want in English (type in terminal)
-2. **The translator** (Claude AI) converts that into the local language
-   (Blender Python code)
-3. **The waiter** (HTTP connection) carries the order to the kitchen
-4. **The kitchen** (Blender) prepares your dish (creates/modifies the 3D object)
-5. **You see the result** on your plate (in Blender's viewport)
+1. **You** say what you want in English (type or speak in terminal)
+2. **The AI assistant** (Qwen2.5-Coder, running on your GPU) converts that
+   into Blender's language (Python code)
+3. **A messenger** (HTTP connection) carries the code to Blender
+4. **Blender** executes the code (creates/modifies the 3D object)
+5. **You see the result** in Blender's viewport
 
 The key insight: you never need to learn Blender's interface. The AI knows
 how to speak Blender's language, so you don't have to.
@@ -45,86 +46,77 @@ Phase 1 is the working skeleton — the minimum needed to prove the idea works.
 
 ```
 blender-ai/
+├── launcher.sh              ← Double-click to start everything
+├── blender-ai.desktop       ← App menu icon for Linux
 ├── addon/
-│   └── ai_bridge.py         ← Lives INSIDE Blender (the kitchen door)
+│   └── ai_bridge.py         ← Lives INSIDE Blender (the door to send commands through)
 ├── agent/
 │   ├── main.py              ← The front desk — where you type commands
-│   ├── claude_client.py     ← Talks to Claude AI (the translator)
-│   └── blender_client.py    ← Sends code to Blender (the waiter)
+│   ├── llm_client.py        ← Talks to local AI model (the translator)
+│   └── blender_client.py    ← Sends code to Blender (the messenger)
 ├── prompts/
-│   └── system.md            ← Instructions that tell Claude how to write Blender code
+│   └── system.md            ← Instructions that tell the AI how to write Blender code
+├── tests/
+│   └── test_llm_client.py   ← Automated checks that the code works correctly
 ├── logs/                    ← Records of every command (auto-created)
-├── .env                     ← Your secret API key (never shared)
-├── .env.example             ← Template showing what the .env file should look like
 └── requirements.txt         ← List of Python libraries needed
 ```
 
 ### Each Piece Explained
 
-**addon/ai_bridge.py** — This is a Blender "addon" (plugin). When you enable
-it in Blender, it starts a tiny web server on your computer (port 6789). This
-server waits for commands. When it receives Python code, it runs that code
-inside Blender. Think of it as a door — without it, there's no way to send
-commands to Blender from outside.
+**launcher.sh** — The "one button" that starts everything. It boots up the AI
+engine (Ollama), opens Blender, and launches the command terminal. When you
+quit, it shuts everything down cleanly.
 
-**agent/main.py** — This is what you actually run. It shows the `>>>` prompt,
-takes your typed text, sends it to Claude, gets code back, sends that code to
-Blender, and shows you the result. It's the "conductor" that coordinates
-everything.
+**addon/ai_bridge.py** — A Blender plugin. It opens a "door" (web server on
+port 6789) so outside programs can send commands to Blender. Each command is
+logged as an undo step, so you can Ctrl+Z to revert.
 
-**agent/claude_client.py** — This file talks to the Claude API. It sends your
-English text along with special instructions (the system prompt) that tell
-Claude: "You are a Blender expert. Return only executable Python code."
-Claude reads your request, understands what you want, and writes the code.
+**agent/main.py** — The program you interact with. Shows the `>>>` prompt,
+takes your text, orchestrates everything. If Blender reports an error, it
+automatically asks the AI to fix the code and try again.
 
-**agent/blender_client.py** — This file handles the HTTP connection to Blender.
-It packages the code Claude generated, sends it to the addon's web server,
-and brings back the result (success or error).
+**agent/llm_client.py** — Talks to the local AI model through Ollama. It
+sends your English text along with special instructions (the system prompt),
+and extracts clean code from the response (stripping any markdown formatting
+the model might add).
 
-**prompts/system.md** — These are Claude's "job instructions." They tell Claude
-about Blender's coordinate system, measurement units, common patterns, and
-rules. Without this, Claude would generate code that might not work correctly
-in Blender.
+**agent/blender_client.py** — Handles the HTTP connection to Blender. Packages
+the code, sends it, and brings back the result.
+
+**prompts/system.md** — The AI's "job description." It tells the model about
+Blender's coordinate system, measurement units, and includes many
+request/response examples so the model knows exactly what format to use.
 
 ---
 
 ## What Comes Next
 
 ### Phase 2 — Voice Input
-Instead of typing commands, you'll be able to **speak** to Blender. The system
-will use your microphone and a speech-to-text AI (faster-whisper, running
-locally on your GPU) to hear what you say and convert it to text. Then
-everything works the same as Phase 1 — just hands-free.
-
-Think of it: you're looking at your 3D model and say "make it wider" — and
-it happens.
+Instead of typing commands, you'll speak to Blender. A speech-to-text model
+(faster-whisper, running locally on your GPU alongside the coding model)
+hears what you say and converts it to text. Then everything works the same
+as Phase 1 — just hands-free.
 
 ### Phase 3 — Context Awareness
-Right now, each command is independent — the AI doesn't remember what's already
-in your scene. Phase 3 fixes that. After every command, the system will look
-at what's in the Blender scene (object names, positions, sizes) and feed that
-information back to Claude. This enables conversational modeling:
+Right now, each command is independent. Phase 3 feeds scene information back
+to the AI after every command, enabling conversational modeling:
 
 - "Create a box" → box appears
-- "Make it taller" → the AI knows which object you mean, makes it taller
-- "Put a hole through the center" → the AI understands context, creates the hole
+- "Make it taller" → AI knows which object, makes it taller
+- "Put a hole through it" → AI understands context, does the boolean operation
 
 ### Phase 4 — 3D Print Intelligence
-The final phase adds intelligence specific to 3D printing. Before you export
-a model for your Prusa MK3 printer, the system will:
-
-- Check for **overhangs** (parts that stick out and would need support material)
-- Check **wall thickness** (too thin = breaks during printing)
-- **Export STL files** ready for your slicer software
+Before exporting for the Prusa MK3, the system checks for overhangs, wall
+thickness, and manifold geometry. Then exports a print-ready STL.
 
 ---
 
-## Why This Matters
+## The Local Advantage
 
-This project is a bridge between human intent and technical execution.
-Instead of spending weeks learning a complex tool, you can start creating
-immediately. The AI handles the translation layer, and you focus on what
-you actually want to build.
-
-For 3D printing specifically, this means going from idea to physical object
-with nothing more than a conversation.
+Everything runs on your machine:
+- **No internet needed** after initial setup
+- **No API costs** — you own the AI model
+- **No data leaves your computer** — complete privacy
+- **Works offline** — airplane, cabin, anywhere with power
+- **Fast** — no network latency, just GPU computation
