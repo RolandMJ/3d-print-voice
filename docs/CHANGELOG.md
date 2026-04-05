@@ -7,7 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - GUI control bar (agent/app.py) — Blender-themed top bar with text and voice input
-- Voice input module (agent/voice.py) — faster-whisper on CUDA with silence detection
+- Voice input module (agent/voice.py) — faster-whisper base.en on CPU with silence detection
 - Mic toggle: click to record, auto-stops after 1.5s silence, transcribes, sends
 - Live status panel: Blender/Ollama/Mic connection dots, VRAM usage, command count
 - F1 global hotkey for mic toggle
@@ -21,6 +21,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Terminal mode (agent/main.py) preserved as fallback for headless use
 - System prompt expanded from 8 to 30+ operation examples
 - Desktop file updated for GUI mode
+
+### Fixed
+- VRAM exhaustion: moved whisper from CUDA (small.en) to CPU (base.en)
+  to avoid exceeding 12GB alongside coding model
+- Mic capture silence: replaced sounddevice with arecord subprocess due
+  to PipeWire compatibility issue (sounddevice returns zeros, arecord works)
 
 ## [0.2.0] - 2026-04-05
 

@@ -7,6 +7,44 @@ Each entry records what was built, why, and what decisions were made.
 
 ---
 
+## Session Handoff — Where We Left Off (2026-04-05)
+
+**Current version:** v0.3.0 (14 commits on main, pushed to GitHub)
+
+**What works:**
+- GUI control bar with Blender dark theme, text input, status panel
+- Text commands → Ollama (Qwen2.5-Coder 14B) → Blender execution
+- 30+ operation recipes (hollowing, booleans, bevels, shapes, tolerances)
+- Undo support (Ctrl+Z in Blender)
+- Error retry (auto-feeds errors back to model)
+- Session logging
+- One-click launcher (./launcher.sh)
+
+**What needs testing next session:**
+- Voice input end-to-end (mic → arecord → whisper → command). The arecord
+  capture works (confirmed via wav analysis), whisper transcription works
+  (confirmed via test), but the full GUI flow (click MIC → speak → auto-stop
+  → transcribe → execute in Blender) has not been tested live yet.
+- Complex multi-step operations (box with lid, boolean combinations)
+- Tolerance-fit parts printed on Prusa MK3 (do clearances need adjustment?)
+
+**What's next (Phase 3 — Context Awareness):**
+- After each bpy execution, query scene state (object names, positions,
+  dimensions) and feed back to the model as context
+- This enables conversational modeling: "make it taller", "move it left",
+  "add a hole through the Cube"
+- Currently each command is independent — the model doesn't know what's
+  in the scene
+
+**Known issues:**
+- sounddevice library incompatible with PipeWire on this system (replaced
+  with arecord, but worth revisiting if PipeWire updates fix it)
+- VRAM is tight: ~10.2GB used with model loaded, ~1.5GB free for Blender
+  viewport. Complex scenes may cause GPU memory pressure.
+- Whisper model downloads trigger HuggingFace warnings (cosmetic, not functional)
+
+---
+
 ## 2026-04-05 — GUI Control Bar + Voice Input (v0.3.0)
 
 ### What Was Built
@@ -15,9 +53,9 @@ GUI control bar replacing the terminal interface. Blender-themed dark UI
 (`#2D2D2D` background, orange `#E87D0D` accents) positioned at the top of
 the screen, full width, always on top.
 
-Voice input via faster-whisper (small.en model) running on CUDA. Toggle
-recording with a mic button — auto-stops after 1.5 seconds of silence,
-transcribes speech to text, and sends the command through the normal pipeline.
+Voice input via faster-whisper (base.en model) on CPU. Toggle recording with
+a mic button — auto-stops after 1.5 seconds of silence, transcribes speech
+to text, and sends the command through the normal pipeline.
 
 ### Design Decisions
 
@@ -26,10 +64,27 @@ transcribes speech to text, and sends the command through the normal pipeline.
 | Tkinter for GUI | Built into Python, zero extra dependencies, lightweight |
 | Top bar (not floating window) | Doesn't compete with Blender for screen space |
 | Toggle mic (not hold-to-talk) | Hands-free once activated, auto-stop on silence |
-| faster-whisper small.en on CUDA | ~1GB VRAM, 0.5s load time, good accuracy for commands |
+| faster-whisper base.en on CPU | CUDA whisper + coding model exceeded 12GB VRAM; CPU transcription <1s for commands |
+| arecord for mic capture | sounddevice returns silence due to PipeWire compat issue; arecord works reliably |
 | Status panel with VRAM | User needs to know system health at a glance |
 | Background whisper preload | First voice command is fast — model loaded at startup |
 | F1 global hotkey | Can toggle mic even when Blender is focused |
+
+### Bugs Found and Fixed During Testing
+
+1. **VRAM exhaustion:** Whisper small.en on CUDA (~1GB) + Qwen2.5-Coder 14B
+   (~9GB) + Blender + desktop exceeded 12GB. Fixed by moving whisper to CPU
+   with base.en model. Transcription speed is still <1s for short commands.
+
+2. **sounddevice silence bug:** Python sounddevice library returns all-zero
+   audio on this system (PipeWire + Corsair VOID ELITE). Root cause: PipeWire
+   compatibility issue with PortAudio's stream activation. Fix: replaced
+   sounddevice with subprocess call to arecord (ALSA), which captures
+   correctly. Confirmed with RMS 302 from arecord vs RMS 0 from sounddevice.
+
+3. **Mic physically working:** Corsair VOID ELITE mic captures audio at the
+   ALSA level (verified via `arecord` + wav analysis). Initial reports of
+   "no audio" were due to the sounddevice library issue, not hardware.
 
 ### UX Layout
 
