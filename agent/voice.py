@@ -15,21 +15,21 @@ import numpy as np
 import sounddevice as sd
 from faster_whisper import WhisperModel
 
-# Audio settings
-SAMPLE_RATE = 16000  # Whisper expects 16kHz
+# Audio settings — capture at 48kHz (Corsair native), resample for Whisper
+SAMPLE_RATE = 48000
 CHANNELS = 1
 DTYPE = "float32"
-BLOCK_SIZE = 1024  # samples per callback
+BLOCK_SIZE = 2048  # samples per callback
 
 # Silence detection
 SILENCE_THRESHOLD = 0.01  # RMS below this = silence
 SILENCE_DURATION = 1.5  # seconds of silence before auto-stop
 MIN_RECORDING_DURATION = 0.5  # ignore recordings shorter than this
 
-# Whisper settings
-WHISPER_MODEL = "small.en"
-WHISPER_DEVICE = "cuda"
-WHISPER_COMPUTE = "float16"
+# Whisper settings — CPU to avoid VRAM competition with coding model
+WHISPER_MODEL = "base.en"
+WHISPER_DEVICE = "cpu"
+WHISPER_COMPUTE = "int8"
 
 _whisper = None
 _whisper_lock = threading.Lock()
@@ -57,11 +57,23 @@ def _get_whisper():
     return _whisper
 
 
+def _resample_to_16k(audio: np.ndarray) -> np.ndarray:
+    """Resample from SAMPLE_RATE to 16kHz for Whisper."""
+    if SAMPLE_RATE == 16000:
+        return audio
+    # Simple decimation — works well for integer ratios (48000/16000 = 3)
+    ratio = SAMPLE_RATE / 16000
+    indices = np.round(np.arange(0, len(audio), ratio)).astype(int)
+    indices = indices[indices < len(audio)]
+    return audio[indices]
+
+
 def transcribe(audio: np.ndarray) -> str:
     """Transcribe audio array to text using faster-whisper."""
     model = _get_whisper()
+    audio_16k = _resample_to_16k(audio)
     segments, _info = model.transcribe(
-        audio,
+        audio_16k,
         beam_size=5,
         language="en",
         vad_filter=True,
