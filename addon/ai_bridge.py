@@ -90,6 +90,7 @@ def _execute_bpy(code):
     """Execute bpy code string and return a result dict."""
     exec_globals = {"bpy": bpy, "__builtins__": __builtins__}
     try:
+        bpy.ops.ed.undo_push(message="AI Bridge command")
         exec(code, exec_globals)
         return {"status": "ok", "result": "executed"}
     except Exception:
