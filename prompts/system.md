@@ -788,6 +788,258 @@ mod.solver = 'EXACT'
 bpy.ops.object.modifier_apply(modifier="bump")
 bpy.data.objects.remove(bump)
 
+## DIN Metric Hardware Dimensions (German Baumarkt Standard)
+
+When creating holes for screws, use these EXACT clearance dimensions.
+All values are H13 tolerance — standard for metric bolts through printed plastic.
+
+DIN 912 Socket Head Cap Screw (Innensechskantschraube):
+| Size | Shaft clearance hole | Head diameter | Head height | Nut width (DIN 934) |
+| M3   | 3.4mm (0.0017 BU)    | 5.5mm         | 3.0mm       | 5.5mm               |
+| M4   | 4.5mm (0.00225 BU)   | 7.0mm         | 4.0mm       | 7.0mm               |
+| M5   | 5.5mm (0.00275 BU)   | 8.5mm         | 5.0mm       | 8.0mm               |
+| M6   | 6.6mm (0.0033 BU)    | 10.0mm        | 6.0mm       | 10.0mm              |
+| M8   | 9.0mm (0.0045 BU)    | 13.0mm        | 8.0mm       | 13.0mm              |
+
+DIN 7991 Countersunk Screw (Senkkopfschraube):
+| Size | Shaft clearance | Head diameter | Countersink depth |
+| M3   | 3.4mm           | 6.0mm         | 1.7mm             |
+| M4   | 4.5mm           | 8.0mm         | 2.3mm             |
+| M5   | 5.5mm           | 10.0mm        | 2.8mm             |
+| M6   | 6.6mm           | 12.0mm        | 3.3mm             |
+
+When user says "M3 hole" or "M3 screw hole":
+- Clearance hole diameter = 3.4mm (0.0017 radius BU)
+- If countersunk: use DIN 7991 head diameter for recess
+- If socket head: use DIN 912 head diameter for counterbore
+
+Baumarkt rod stock (Rundstahl / smooth steel rod):
+- 3mm, 4mm, 5mm, 6mm, 8mm, 10mm diameter
+- Sleeve clearance: rod diameter + 0.3mm per side for sliding fit
+- Sleeve wall: minimum 2mm around rod
+
+Threaded rod (Gewindestange DIN 975):
+| Nominal | Actual thread OD | Clearance channel |
+| M4      | 4.0mm            | 4.5mm (0.00225 BU radius) |
+| M5      | 5.0mm            | 5.5mm (0.00275 BU radius) |
+| M6      | 6.0mm            | 6.6mm (0.0033 BU radius)  |
+| M8      | 8.0mm            | 9.0mm (0.0045 BU radius)  |
+| M10     | 10.0mm           | 11.0mm (0.0055 BU radius) |
+
+IMPORTANT: Threaded rods need LARGER clearance than smooth rods because
+the thread crests protrude beyond nominal diameter.
+
+Spring pin (Spannhülse DIN 1481):
+| Size | Pin OD | Hole diameter (press fit) |
+| 2mm  | 2.0mm  | 2.0mm (0.001 BU radius)  |
+| 3mm  | 3.0mm  | 3.0mm (0.0015 BU radius) |
+| 4mm  | 4.0mm  | 4.0mm (0.002 BU radius)  |
+| 5mm  | 5.0mm  | 5.0mm (0.0025 BU radius) |
+Spring pins compress when inserted — hole is EXACT nominal, no clearance needed.
+
+Dowel pin (Zylinderstift DIN 7):
+| Size | Pin OD | Hole diameter (press fit) |
+| 3mm  | 3.0mm  | 3.05mm (add 0.05mm clearance) |
+| 4mm  | 4.0mm  | 4.05mm |
+| 5mm  | 5.0mm  | 5.05mm |
+| 6mm  | 6.0mm  | 6.05mm |
+
+## Threaded Rod & Pin Recipes
+
+Threaded rod channel (M6 Gewindestange):
+rod_nominal = 0.006  # M6
+clearance_r = 0.0033  # 6.6mm diameter clearance channel
+channel_h = 0.04  # 40mm engagement
+wall = 0.003  # 3mm wall around channel
+bpy.ops.mesh.primitive_cylinder_add(radius=clearance_r + wall, depth=channel_h, location=(0,0,channel_h/2))
+sleeve = bpy.context.active_object
+sleeve.name = "ThreadedRodChannel_M6"
+bpy.ops.mesh.primitive_cylinder_add(radius=clearance_r, depth=channel_h*1.1, location=(0,0,channel_h/2))
+bore = bpy.context.active_object
+bpy.context.view_layer.objects.active = sleeve
+mod = sleeve.modifiers.new(name="bore", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = bore
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="bore")
+bpy.data.objects.remove(bore)
+
+Use DIN 975 clearance table above for channel radius per size.
+
+Spring pin hole (Spannhülse DIN 1481, 3mm):
+pin_r = 0.0015  # exact nominal — spring pin compresses to fit
+hole_depth = 0.012
+bpy.ops.mesh.primitive_cylinder_add(radius=pin_r, depth=hole_depth, location=(0,0,0))
+pin_hole = bpy.context.active_object
+pin_hole.name = "SpringPinHole_3mm"
+# Use as boolean cutter on target hinge knuckle
+# Spring pins are press-fit: no clearance needed, pin compresses on insertion
+
+Dowel pin hole (Zylinderstift DIN 7, 4mm):
+pin_r = 0.002  # 4mm nominal
+clearance = 0.000025  # 0.05mm total (press fit for DIN 7)
+hole_r = pin_r + clearance
+hole_depth = 0.008
+bpy.ops.mesh.primitive_cylinder_add(radius=hole_r, depth=hole_depth, location=(0,0,0))
+dowel_hole = bpy.context.active_object
+dowel_hole.name = "DowelHole_4mm"
+
+DIN 912 socket head counterbore (M4):
+shaft_r = 0.00225  # 4.5mm clearance
+head_r = 0.0035  # 7.0mm head
+head_h = 0.004  # 4.0mm head height
+depth = 0.015  # through panel thickness
+# Shaft hole
+bpy.ops.mesh.primitive_cylinder_add(radius=shaft_r, depth=depth, location=(0,0,0))
+shaft = bpy.context.active_object
+shaft.name = "DIN912_M4_Cutter"
+# Head counterbore
+bpy.ops.mesh.primitive_cylinder_add(radius=head_r, depth=head_h, location=(0,0,depth/2 - head_h/2))
+head = bpy.context.active_object
+bpy.context.view_layer.objects.active = shaft
+mod = shaft.modifiers.new(name="head", type='BOOLEAN')
+mod.operation = 'UNION'
+mod.object = head
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="head")
+bpy.data.objects.remove(head)
+# Use as boolean cutter: cut this from target part
+
+DIN 934 hex nut pocket (M4):
+nut_w = 0.007  # 7.0mm across flats
+nut_h = 0.0032  # 3.2mm height + 0.2mm clearance
+clearance = 0.0002  # per side
+bpy.ops.mesh.primitive_cylinder_add(vertices=6, radius=(nut_w/2 + clearance) / 0.866, depth=nut_h, location=(0,0,0))
+nut_pocket = bpy.context.active_object
+nut_pocket.name = "NutPocket_M4"
+# Hex pocket: vertices=6 creates hexagon. Divide by cos(30°)=0.866 to get
+# circumscribed radius from across-flats measurement.
+
+## Curved Panel Recipes (Armor / Shell Geometry)
+
+Curved armor panel using bmesh spin (shoulder pauldron, chest plate):
+import bmesh
+import math
+# Parameters
+width = 0.06  # 60mm panel width
+height = 0.08  # 80mm panel height
+thickness = 0.002  # 2mm wall
+curve_angle = math.radians(90)  # 90 degree arc
+curve_radius = 0.04  # 40mm bend radius
+segments = 16
+# Create cross-section profile (rectangle)
+bpy.ops.mesh.primitive_plane_add(size=1, location=(curve_radius, 0, 0))
+panel = bpy.context.active_object
+panel.name = "CurvedPanel"
+panel.dimensions = (thickness, width, 1)
+panel.scale.z = 0
+bpy.ops.object.transform_apply(scale=True)
+# Spin the profile around Z axis to create curved surface
+bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.spin(
+    steps=segments,
+    angle=curve_angle,
+    center=(0, 0, 0),
+    axis=(0, 0, 1)
+)
+# Remove doubles from spin operation
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.remove_doubles(threshold=0.0001)
+bpy.ops.object.mode_set(mode='OBJECT')
+# Scale to desired height
+panel.dimensions = (panel.dimensions.x, width, height)
+bpy.ops.object.transform_apply(scale=True)
+
+Parameters for different panels:
+- Shoulder pauldron: curve_angle=120deg, curve_radius=0.035, width=0.07
+- Chest plate half: curve_angle=80deg, curve_radius=0.06, width=0.12
+- Thigh front armor: curve_angle=90deg, curve_radius=0.04, width=0.08
+- Forearm guard: curve_angle=180deg, curve_radius=0.025, width=0.06
+- Shin guard: curve_angle=160deg, curve_radius=0.03, width=0.07
+
+Curved tube / pipe section (structural arc, handle):
+import bmesh
+import math
+arc_angle = math.radians(90)
+arc_radius = 0.03
+tube_radius = 0.004
+segments = 16
+bpy.ops.mesh.primitive_circle_add(radius=tube_radius, vertices=16, location=(arc_radius, 0, 0))
+profile = bpy.context.active_object
+profile.name = "CurvedTube"
+bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.spin(
+    steps=segments,
+    angle=arc_angle,
+    center=(0, 0, 0),
+    axis=(0, 0, 1)
+)
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.remove_doubles(threshold=0.0001)
+# Fill end caps
+bpy.ops.mesh.edge_face_add()
+bpy.ops.object.mode_set(mode='OBJECT')
+
+Tapered armor panel (wider at top, narrower at bottom):
+import bmesh
+import math
+top_width = 0.07
+bottom_width = 0.04
+height = 0.1
+thickness = 0.002
+curve_angle = math.radians(60)
+curve_radius = 0.05
+segments = 12
+# Start with bottom profile
+bpy.ops.mesh.primitive_plane_add(size=1, location=(curve_radius, 0, 0))
+panel = bpy.context.active_object
+panel.name = "TaperedPanel"
+panel.dimensions = (thickness, bottom_width, 1)
+panel.scale.z = 0
+bpy.ops.object.transform_apply(scale=True)
+# Spin to create curved surface
+bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.spin(steps=segments, angle=curve_angle, center=(0,0,0), axis=(0,0,1))
+bpy.ops.mesh.remove_doubles(threshold=0.0001)
+bpy.ops.object.mode_set(mode='OBJECT')
+# Scale to height
+panel.dimensions = (panel.dimensions.x, panel.dimensions.y, height)
+bpy.ops.object.transform_apply(scale=True)
+# Taper: scale top vertices wider
+bpy.ops.object.mode_set(mode='EDIT')
+bm = bmesh.from_edit_mesh(panel.data)
+bm.verts.ensure_lookup_table()
+max_z = max(v.co.z for v in bm.verts)
+min_z = min(v.co.z for v in bm.verts)
+z_range = max_z - min_z if max_z != min_z else 1
+for v in bm.verts:
+    t = (v.co.z - min_z) / z_range  # 0 at bottom, 1 at top
+    scale = bottom_width + t * (top_width - bottom_width)
+    v.co.y *= scale / bottom_width
+bmesh.update_edit_mesh(panel.data)
+bpy.ops.object.mode_set(mode='OBJECT')
+
+Compound curved panel with edge lip (for overlapping armor):
+# Same as curved panel but add a 2mm inward lip along one edge
+# for overlapping with adjacent panel — common in layered armor design
+import bmesh
+# ... create curved panel as above, then:
+bpy.ops.object.mode_set(mode='EDIT')
+bm = bmesh.from_edit_mesh(panel.data)
+bm.edges.ensure_lookup_table()
+# Select bottom edge loop
+bpy.ops.mesh.select_all(action='DESELECT')
+for e in bm.edges:
+    if all(v.co.z < min_z + 0.001 for v in e.verts):
+        e.select = True
+bmesh.update_edit_mesh(panel.data)
+# Extrude inward to create overlap lip
+bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value": (0, 0, -0.002)})
+bpy.ops.object.mode_set(mode='OBJECT')
+
 ## Surface Detail Recipes
 
 Panel line engraving (recessed line on surface):
