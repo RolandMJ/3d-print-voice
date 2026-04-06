@@ -138,7 +138,7 @@ echo -e "${GREEN}Version:${NC} v$(printf '%03d' "$VERSION") → ${FILENAME}"
 
 # --- Push file ---
 echo -n "Pushing to VPS... "
-scp -q "$SOURCE_FILE" "$VPS:$VPS_ACTIVE/$FILENAME"
+scp -O -q "$SOURCE_FILE" "$VPS:$VPS_ACTIVE/$FILENAME"
 echo -e "${GREEN}OK${NC}"
 
 # --- Update manifest on VPS ---
@@ -152,6 +152,8 @@ else:
     m = {'project': 'articulated-figure-01', 'author': 'Roland Preisach',
          'created': '$TIMESTAMP', 'parts': {}}
 
+if 'parts' not in m:
+    m['parts'] = {}
 key = '$PART_KEY'
 if key not in m['parts']:
     m['parts'][key] = {'versions': [], 'current_version': 0, 'current_status': 'DRAFT'}
