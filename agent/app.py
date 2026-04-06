@@ -52,19 +52,27 @@ class Tooltip:
     def _show(self, event=None):
         if not self._text:
             return
-        x = self._widget.winfo_rootx() + 20
-        y = self._widget.winfo_rooty() + self._widget.winfo_height() + 4
-        self._tip = tk.Toplevel(self._widget)
-        self._tip.wm_overrideredirect(True)
-        self._tip.wm_geometry(f"+{x}+{y}")
-        lbl = tk.Label(self._tip, text=self._text, bg="#FFFFDD", fg="#333",
-                       relief=tk.SOLID, borderwidth=1,
-                       font=("sans-serif", 9), padx=6, pady=3)
-        lbl.pack()
+        try:
+            if not self._widget.winfo_exists():
+                return
+            x = self._widget.winfo_rootx() + 20
+            y = self._widget.winfo_rooty() + self._widget.winfo_height() + 4
+            self._tip = tk.Toplevel(self._widget)
+            self._tip.wm_overrideredirect(True)
+            self._tip.wm_geometry(f"+{x}+{y}")
+            lbl = tk.Label(self._tip, text=self._text, bg="#FFFFDD", fg="#333",
+                           relief=tk.SOLID, borderwidth=1,
+                           font=("sans-serif", 9), padx=6, pady=3)
+            lbl.pack()
+        except tk.TclError:
+            pass
 
     def _hide(self, event=None):
-        if self._tip:
-            self._tip.destroy()
+        try:
+            if self._tip:
+                self._tip.destroy()
+                self._tip = None
+        except tk.TclError:
             self._tip = None
 
 

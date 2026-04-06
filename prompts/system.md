@@ -458,17 +458,17 @@ for i in range(rib_count):
 
 Dovetail slide rail (80mm long, 60deg):
 import math
+import bmesh
 rail_l = 0.08
 base_w = 0.01
 top_w = 0.006  # narrower at top = dovetail
 rail_h = 0.005
-# Create rail profile using bmesh
 bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, rail_h/2))
 rail = bpy.context.active_object
 rail.name = "DovetailRail"
 rail.dimensions = (base_w, rail_l, rail_h)
 bpy.ops.object.transform_apply(scale=True)
-# Taper top edges inward
+# Taper top edges inward for dovetail profile
 bpy.ops.object.mode_set(mode='EDIT')
 bm = bmesh.from_edit_mesh(rail.data)
 bm.verts.ensure_lookup_table()
@@ -479,11 +479,26 @@ bmesh.update_edit_mesh(rail.data)
 bpy.ops.object.mode_set(mode='OBJECT')
 
 Dovetail channel (mating part, add 0.2mm clearance):
+import bmesh
 CLEARANCE = 0.0002
-chan_base_w = base_w + CLEARANCE*2
-chan_top_w = top_w + CLEARANCE*2
-chan_h = rail_h + CLEARANCE
-# Boolean cut with oversized dovetail shape
+chan_base_w = 0.01 + CLEARANCE*2
+chan_top_w = 0.006 + CLEARANCE*2
+chan_h = 0.005 + CLEARANCE
+chan_l = 0.08
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, chan_h/2))
+channel = bpy.context.active_object
+channel.name = "DovetailChannel"
+channel.dimensions = (chan_base_w, chan_l, chan_h)
+bpy.ops.object.transform_apply(scale=True)
+bpy.ops.object.mode_set(mode='EDIT')
+bm = bmesh.from_edit_mesh(channel.data)
+bm.verts.ensure_lookup_table()
+for v in bm.verts:
+    if v.co.z > 0:
+        v.co.x *= (chan_top_w / chan_base_w)
+bmesh.update_edit_mesh(channel.data)
+bpy.ops.object.mode_set(mode='OBJECT')
+# Use this as a boolean cutter on the target object
 
 T-slot channel for M4 bolt:
 slot_w = 0.0074  # M4 nut width + clearance

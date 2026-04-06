@@ -52,12 +52,12 @@ CONFIG_FILE="$HOME/.config/3d-print-voice/config.json"
 FIRST_RUN=true
 if [ -f "$CONFIG_FILE" ]; then
     FIRST_RUN=$(python3 -c "
-import json
+import json, sys
 try:
-    cfg = json.load(open('$CONFIG_FILE'))
+    cfg = json.load(open(sys.argv[1]))
     print('false' if cfg.get('first_run_done', False) else 'true')
 except: print('true')
-" 2>/dev/null || echo "true")
+" "$CONFIG_FILE" 2>/dev/null || echo "true")
 fi
 
 if [ "$FIRST_RUN" = "true" ]; then
@@ -69,12 +69,12 @@ if [ "$FIRST_RUN" = "true" ]; then
     COMPLETED=false
     if [ -f "$CONFIG_FILE" ]; then
         COMPLETED=$(python3 -c "
-import json
+import json, sys
 try:
-    cfg = json.load(open('$CONFIG_FILE'))
+    cfg = json.load(open(sys.argv[1]))
     print('true' if cfg.get('first_run_done', False) else 'false')
 except: print('false')
-" 2>/dev/null || echo "false")
+" "$CONFIG_FILE" 2>/dev/null || echo "false")
     fi
 
     if [ "$COMPLETED" != "true" ]; then
@@ -87,7 +87,7 @@ fi
 # --- Read model from config ---
 MODEL="qwen2.5-coder:14b-instruct"
 if [ -f "$CONFIG_FILE" ]; then
-    MODEL=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('model', 'qwen2.5-coder:14b-instruct'))" 2>/dev/null || echo "$MODEL")
+    MODEL=$(python3 -c "import json, sys; print(json.load(open(sys.argv[1])).get('model', 'qwen2.5-coder:14b-instruct'))" "$CONFIG_FILE" 2>/dev/null || echo "$MODEL")
 fi
 
 BLENDER_PID=""

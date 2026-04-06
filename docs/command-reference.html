@@ -464,9 +464,10 @@ function setLang(lang) {
   document.getElementById('btn-en').classList.toggle('active', lang === 'en');
   document.getElementById('btn-de').classList.toggle('active', lang === 'de');
   document.documentElement.lang = lang;
+  try { localStorage.setItem('3dpv-lang', lang); } catch(e) {}
 }
-// Init
-setLang('en');
+// Init — restore saved language preference
+setLang((function() { try { return localStorage.getItem('3dpv-lang') || 'en'; } catch(e) { return 'en'; } })());
 </script>
 
 </body>
