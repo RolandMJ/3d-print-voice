@@ -28,6 +28,11 @@ class CommandHandler(BaseHTTPRequestHandler):
     """Handles POST /execute requests with bpy code."""
 
     def do_POST(self):
+        # Localhost-only origin check
+        if self.client_address[0] != "127.0.0.1":
+            self._respond(403, {"status": "error", "error": "Only localhost connections allowed"})
+            return
+
         if self.path != "/execute":
             self._respond(404, {"status": "error", "error": "Not found"})
             return
@@ -86,14 +91,75 @@ def _process_queue():
     return TIMER_INTERVAL
 
 
+MAX_CODE_LENGTH = 10000  # 10KB max
+
+_BLOCKED_PATTERNS = [
+    "import os", "import sys", "import subprocess", "import socket",
+    "import shutil", "import pathlib",
+    "__import__", "eval(", "exec(", "compile(",
+    "open(", "getattr(", "setattr(", "delattr(",
+    "globals(", "locals(", "vars(",
+    "os.system", "os.popen", "os.remove", "os.unlink",
+    "subprocess.run", "subprocess.Popen", "subprocess.call",
+]
+
+
+def _validate_bpy_code(code):
+    """Check code for dangerous patterns. Returns error string or None if safe."""
+    for pattern in _BLOCKED_PATTERNS:
+        if pattern in code:
+            return f"Blocked: code contains forbidden pattern '{pattern}'"
+    return None
+
+
+def _blocked_import(name, *args, **kwargs):
+    """Only allow safe imports inside exec'd bpy code."""
+    allowed = {"math", "mathutils", "bmesh", "json"}
+    if name in allowed:
+        import importlib
+        return importlib.import_module(name)
+    raise ImportError(f"Import of '{name}' is not allowed in bpy code execution")
+
+
 def _execute_bpy(code):
-    """Execute bpy code string and return a result dict.
+    """Execute bpy code in a restricted sandbox.
     If the executed code sets a 'result' variable, its value is returned."""
-    exec_globals = {"bpy": bpy, "__builtins__": __builtins__}
+    if len(code) > MAX_CODE_LENGTH:
+        return {"status": "error", "error": f"Code too long ({len(code)} chars, max {MAX_CODE_LENGTH})"}
+
+    violation = _validate_bpy_code(code)
+    if violation:
+        return {"status": "error", "error": violation}
+
+    import math
+    try:
+        import mathutils
+    except ImportError:
+        mathutils = None
+
+    restricted_globals = {
+        "bpy": bpy,
+        "math": math,
+        "mathutils": mathutils,
+        "__builtins__": {
+            "range": range, "len": len, "int": int, "float": float,
+            "str": str, "bool": bool, "list": list, "dict": dict,
+            "tuple": tuple, "set": set, "print": print, "abs": abs,
+            "min": min, "max": max, "round": round, "enumerate": enumerate,
+            "zip": zip, "sorted": sorted, "reversed": reversed,
+            "isinstance": isinstance, "type": type, "hasattr": hasattr,
+            "True": True, "False": False, "None": None,
+            "__import__": _blocked_import,
+            "Exception": Exception, "ValueError": ValueError,
+            "TypeError": TypeError, "KeyError": KeyError,
+            "IndexError": IndexError, "AttributeError": AttributeError,
+            "RuntimeError": RuntimeError, "StopIteration": StopIteration,
+        },
+    }
     try:
         bpy.ops.ed.undo_push(message="AI Bridge command")
-        exec(code, exec_globals)
-        result_val = exec_globals.get("result", "executed")
+        exec(code, restricted_globals)
+        result_val = restricted_globals.get("result", "executed")
         return {"status": "ok", "result": result_val}
     except Exception:
         return {"status": "error", "error": traceback.format_exc()}
