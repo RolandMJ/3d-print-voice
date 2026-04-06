@@ -127,6 +127,7 @@ class PrintVoiceApp:
         self._saved_blender_settings = None
         self._cmd_history = []
         self._history_idx = -1
+        self._scene_context = ""
 
         # Voice
         self._recorder = VoiceRecorder(on_auto_stop=self._on_voice_result)
@@ -500,8 +501,8 @@ ts.snap_elements = {snap_set}
     def _run_pipeline(self, text):
         """Execute the full command pipeline (background thread)."""
         try:
-            # Generate bpy code
-            bpy_code = generate_bpy_code(text)
+            # Generate bpy code with scene context
+            bpy_code = generate_bpy_code(text, scene_context=self._scene_context)
 
             if bpy_code.strip().startswith("# CANNOT_EXECUTE"):
                 self.root.after(0, self._set_result,
@@ -520,6 +521,7 @@ ts.snap_elements = {snap_set}
                 self.root.after(0, self._set_result,
                                 f'"{text}" — Done.', FG_RESULT)
                 self._log(text, bpy_code, result)
+                self._update_scene_context()
             else:
                 error = result.get("error", "unknown")
                 # Try retry
@@ -539,6 +541,7 @@ ts.snap_elements = {snap_set}
                     self.root.after(0, self._set_result,
                                     f'"{text}" — Done (retry).', FG_RESULT)
                     self._log(text, bpy_retry, result_retry)
+                    self._update_scene_context()
                 else:
                     short_err = error.split("\n")[-2] if "\n" in error else error[:120]
                     self.root.after(0, self._set_result,
@@ -554,6 +557,37 @@ ts.snap_elements = {snap_set}
             # _update_elapsed self-terminates when _processing is False
             self.root.after(0, self._send_btn.configure,
                             {"state": tk.NORMAL, "bg": ORANGE})
+
+    def _update_scene_context(self):
+        """Query Blender scene state for context-aware next command."""
+        try:
+            scene = blender_client.query_scene()
+            if scene.get("objects"):
+                import json
+                self._scene_context = json.dumps(scene, indent=None)
+            else:
+                self._scene_context = ""
+            # Check print bed limits
+            self._check_print_bed(scene)
+        except Exception:
+            self._scene_context = ""
+
+    def _check_print_bed(self, scene):
+        """Warn if any object exceeds print bed dimensions."""
+        from agent.config import load_config
+        cfg = load_config()
+        bed = cfg.get("print_bed", {"x": 250, "y": 210, "z": 210})
+        for obj in scene.get("objects", []):
+            dims = obj.get("dimensions_mm", [0, 0, 0])
+            name = obj.get("name", "?")
+            for axis, limit, val in [("X", bed["x"], dims[0]),
+                                      ("Y", bed["y"], dims[1]),
+                                      ("Z", bed["z"], dims[2])]:
+                if val > limit:
+                    self.root.after(0, self._set_result,
+                        f"Warning: {name} ({val:.0f}mm {axis}) exceeds bed ({limit}mm) — consider splitting",
+                        YELLOW)
+                    return  # Show first warning only
 
     def _set_result(self, text, color=FG_DIM):
         """Update the last-command result label."""

@@ -1,6 +1,7 @@
 import json
 import urllib.request
 import urllib.error
+from pathlib import Path
 
 BLENDER_URL = "http://127.0.0.1:6789"
 
@@ -25,6 +26,21 @@ def execute(bpy_code: str) -> dict:
             return {"status": "error", "error": f"HTTP {e.code}: {body}"}
     except urllib.error.URLError as e:
         return {"status": "error", "error": f"Connection failed: {e.reason}. Is Blender running with the AI Bridge addon enabled?"}
+
+
+_SCENE_QUERY_PATH = Path(__file__).resolve().parent.parent / "prompts" / "scene_query.py"
+
+
+def query_scene() -> dict:
+    """Execute the scene query script in Blender and return parsed scene state."""
+    try:
+        code = _SCENE_QUERY_PATH.read_text()
+        result = execute(code)
+        if result["status"] == "ok" and isinstance(result.get("result"), str):
+            return json.loads(result["result"])
+    except Exception:
+        pass
+    return {"objects": [], "active": None, "selected": []}
 
 
 def health_check() -> bool:
