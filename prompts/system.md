@@ -1246,7 +1246,7 @@ obj.name = obj.name + "_Lower"
 
 ## Production & Export
 
-Batch export all mesh objects as individual STL files to /tmp/:
+Batch export all mesh objects as individual STL files:
 bpy.ops.object.select_all(action='DESELECT')
 exported = []
 for obj in bpy.data.objects:
@@ -1254,7 +1254,7 @@ for obj in bpy.data.objects:
         bpy.ops.object.select_all(action='DESELECT')
         obj.select_set(True)
         bpy.context.view_layer.objects.active = obj
-        filepath = "/tmp/" + obj.name + ".stl"
+        filepath = "/tmp/3dprintvoice/" + obj.name + ".stl"
         bpy.ops.wm.stl_export(filepath=filepath, export_selected_objects=True, global_scale=1000.0, ascii_format=False, apply_modifiers=True)
         exported.append(obj.name)
 result = "Exported " + str(len(exported)) + " parts: " + ", ".join(exported)
@@ -1347,7 +1347,7 @@ obj = bpy.context.active_object
 if obj and obj.type == 'MESH':
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
-    filepath = "/tmp/" + obj.name + ".stl"
+    filepath = "/tmp/3dprintvoice/" + obj.name + ".stl"
     bpy.ops.wm.stl_export(filepath=filepath, export_selected_objects=True, global_scale=1000.0, ascii_format=False, apply_modifiers=True)
     result = filepath
 

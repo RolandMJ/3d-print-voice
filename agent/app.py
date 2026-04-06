@@ -143,6 +143,9 @@ class PrintVoiceApp:
         # Preload whisper in background
         threading.Thread(target=self._preload_whisper, daemon=True).start()
 
+        # Clean up old slicer exports from previous sessions
+        self._cleanup_old_exports()
+
         # Bind close
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
@@ -415,20 +418,22 @@ ts.snap_elements = {snap_set}
 
     # --- Actions ---
 
+    _SLICER_EXPORT_DIR = "/tmp/3dprintvoice/"
+    _slicer_pid = None
+
     def _send_to_slicer(self):
-        """Export active object as STL and open in PrusaSlicer."""
+        """Export active object as STL and open in / notify PrusaSlicer."""
         if not self._slicer_path:
             self._set_result("PrusaSlicer not found — install it and restart", FG_ERROR)
             return
         if self._processing:
             return
-        # Export active object via Blender, then open in slicer
         export_code = (
             'bpy.ops.object.select_all(action="DESELECT")\n'
             'obj = bpy.context.active_object\n'
             'if obj and obj.type == "MESH":\n'
             '    obj.select_set(True)\n'
-            '    filepath = "/tmp/" + obj.name + ".stl"\n'
+            '    filepath = "' + self._SLICER_EXPORT_DIR + '" + obj.name + ".stl"\n'
             '    bpy.ops.wm.stl_export(filepath=filepath, export_selected_objects=True, '
             'global_scale=1000.0, ascii_format=False, apply_modifiers=True)\n'
             '    result = filepath\n'
@@ -439,16 +444,55 @@ ts.snap_elements = {snap_set}
         threading.Thread(target=self._run_slicer_export, args=(export_code,),
                          daemon=True).start()
 
-    def _run_slicer_export(self, export_code):
-        """Background: export STL then open PrusaSlicer."""
+    def _slicer_is_running(self) -> bool:
+        """Check if our tracked PrusaSlicer process is still alive."""
+        if self._slicer_pid is None:
+            return False
         try:
+            import os
+            os.kill(self._slicer_pid, 0)  # signal 0 = check existence
+            return True
+        except (OSError, ProcessLookupError):
+            self._slicer_pid = None
+            return False
+
+    def _ensure_export_dir(self):
+        """Create the slicer export directory."""
+        import os
+        os.makedirs(self._SLICER_EXPORT_DIR, exist_ok=True)
+
+    def _cleanup_old_exports(self):
+        """Remove STL files from previous sessions (runs at startup)."""
+        try:
+            export_dir = Path(self._SLICER_EXPORT_DIR)
+            if export_dir.exists():
+                for f in export_dir.glob("*.stl"):
+                    f.unlink()
+        except Exception:
+            pass
+
+    def _run_slicer_export(self, export_code):
+        """Background: export STL, then launch or notify PrusaSlicer."""
+        try:
+            self._ensure_export_dir()
             result = blender_client.execute(export_code)
-            if result["status"] == "ok" and result.get("result", "").startswith("/tmp/"):
+            if result["status"] == "ok" and result.get("result", "").startswith(self._SLICER_EXPORT_DIR):
                 stl_path = result["result"]
-                subprocess.Popen([self._slicer_path, stl_path],
-                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                self.root.after(0, self._set_result,
-                                f"Sent to PrusaSlicer: {stl_path}", FG_RESULT)
+
+                if self._slicer_is_running():
+                    # Slicer already open — don't launch new instance
+                    self.root.after(0, self._set_result,
+                        f"Exported: {stl_path} — use File > Import STL in PrusaSlicer",
+                        FG_RESULT)
+                else:
+                    # Launch new slicer instance
+                    proc = subprocess.Popen(
+                        [self._slicer_path, stl_path],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    self._slicer_pid = proc.pid
+                    self.root.after(0, self._set_result,
+                        f"Opened in PrusaSlicer: {stl_path}", FG_RESULT)
+
             elif result.get("result") == "NO_ACTIVE_MESH":
                 self.root.after(0, self._set_result,
                                 "No active mesh object to export", FG_ERROR)
