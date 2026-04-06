@@ -12,10 +12,19 @@ MODEL_TIERS = {
     "lite":   "qwen2.5-coder:3b-instruct",
 }
 
+PRINT_BED_PRESETS = {
+    "prusa_mk3": {"x": 250, "y": 210, "z": 210},
+    "prusa_mini": {"x": 180, "y": 180, "z": 180},
+    "ender3": {"x": 220, "y": 220, "z": 250},
+    "custom": {"x": 200, "y": 200, "z": 200},
+}
+
 DEFAULT_CONFIG = {
     "model": "qwen2.5-coder:14b-instruct",
     "model_tier": "full",
     "first_run_done": False,
+    "print_bed": {"x": 250, "y": 210, "z": 210},
+    "print_bed_preset": "prusa_mk3",
 }
 
 

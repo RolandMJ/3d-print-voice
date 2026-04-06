@@ -1040,6 +1040,120 @@ bmesh.update_edit_mesh(panel.data)
 bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value": (0, 0, -0.002)})
 bpy.ops.object.mode_set(mode='OBJECT')
 
+## Organic Geometry Recipes
+
+Bezier curve extrusion (organic tube along a path):
+import math
+# Create bezier curve path
+bpy.ops.curve.primitive_bezier_curve_add(location=(0, 0, 0))
+curve = bpy.context.active_object
+curve.name = "OrganicTube"
+# Set control points for desired shape
+spline = curve.data.splines[0]
+spline.bezier_points[0].co = (0, 0, 0)
+spline.bezier_points[0].handle_right = (0.01, 0, 0.01)
+spline.bezier_points[1].co = (0.03, 0, 0.04)
+spline.bezier_points[1].handle_left = (0.02, 0, 0.03)
+# Set bevel for tube thickness
+curve.data.bevel_depth = 0.003  # 3mm radius tube
+curve.data.bevel_resolution = 8  # smoothness
+curve.data.use_fill_caps = True
+# Convert to mesh for boolean operations
+bpy.ops.object.convert(target='MESH')
+
+Bezier curve parameters:
+- bevel_depth = tube radius
+- bevel_resolution = smoothness (4=octagon, 8=smooth, 16=very smooth)
+- Add more points: spline.bezier_points.add(count)
+- Use for: cable channels, organic handles, tentacles, frame tubes
+
+Subdivision surface base mesh (smooth organic form):
+# Create low-poly control cage, subdivision makes it smooth
+bpy.ops.mesh.primitive_cube_add(size=0.04, location=(0, 0, 0))
+obj = bpy.context.active_object
+obj.name = "OrganicForm"
+# Add subdivision surface for smooth result
+mod = obj.modifiers.new(name="Subsurf", type='SUBSURF')
+mod.levels = 2  # viewport smoothness
+mod.render_levels = 3  # render smoothness
+# Edit the control cage vertices to shape the form
+# Each vertex movement is amplified smoothly by subdivision
+bpy.ops.object.mode_set(mode='EDIT')
+import bmesh
+bm = bmesh.from_edit_mesh(obj.data)
+bm.verts.ensure_lookup_table()
+# Example: pull top vertices up and inward for a dome shape
+for v in bm.verts:
+    if v.co.z > 0.01:
+        v.co.z *= 1.5  # stretch up
+        v.co.x *= 0.7  # taper inward
+        v.co.y *= 0.7
+bmesh.update_edit_mesh(obj.data)
+bpy.ops.object.mode_set(mode='OBJECT')
+# Apply when done shaping
+bpy.ops.object.modifier_apply(modifier="Subsurf")
+
+Use subdivision for: helmets, rounded armor, organic shapes, smooth enclosures
+
+Lofted surface between two profiles (bridge two cross-sections):
+import bmesh
+# Create two separate edge loops at different heights
+bpy.ops.mesh.primitive_circle_add(vertices=16, radius=0.015, location=(0, 0, 0))
+base_profile = bpy.context.active_object
+base_profile.name = "LoftedSurface"
+# Add second profile (different shape/size) at top
+bpy.ops.object.mode_set(mode='EDIT')
+bm = bmesh.from_edit_mesh(base_profile.data)
+# Extrude up and scale for taper
+bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value": (0, 0, 0.05)})
+bpy.ops.transform.resize(value=(0.6, 0.6, 1))  # taper to 60%
+# Bridge creates smooth surface between loops
+# Fill the surface
+bpy.ops.mesh.edge_face_add()
+bpy.ops.object.mode_set(mode='OBJECT')
+# Add solidify for wall thickness
+mod = base_profile.modifiers.new(name="Solidify", type='SOLIDIFY')
+mod.thickness = 0.002
+mod.offset = -1
+bpy.ops.object.modifier_apply(modifier="Solidify")
+
+Use lofting for: thigh armor (round top, flat bottom), exhaust nozzles,
+  transition pieces between different cross-sections
+
+Smooth modifier (soften harsh edges on existing geometry):
+obj = bpy.context.active_object
+mod = obj.modifiers.new(name="Smooth", type='SMOOTH')
+mod.factor = 0.5  # 0.0 = no effect, 1.0 = maximum smoothing
+mod.iterations = 5  # more = smoother
+bpy.ops.object.modifier_apply(modifier="Smooth")
+
+Use smooth for: softening boolean artifacts, organic feel on mechanical parts
+
+Shrinkwrap (project flat detail onto curved surface):
+# Wrap a flat mesh (logo, pattern, detail plate) onto a curved target
+target = bpy.data.objects["CurvedPanel"]  # existing curved surface
+bpy.ops.mesh.primitive_plane_add(size=0.02, location=target.location)
+detail = bpy.context.active_object
+detail.name = "SurfaceDetail"
+# Subdivide for resolution
+bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.subdivide(number_cuts=8)
+bpy.ops.object.mode_set(mode='OBJECT')
+# Shrinkwrap onto target surface
+mod = detail.modifiers.new(name="Shrinkwrap", type='SHRINKWRAP')
+mod.target = target
+mod.wrap_method = 'PROJECT'
+mod.use_project_z = True
+mod.offset = 0.0005  # 0.5mm offset from surface
+bpy.ops.object.modifier_apply(modifier="Shrinkwrap")
+# Add solidify for thickness
+mod2 = detail.modifiers.new(name="Solidify", type='SOLIDIFY')
+mod2.thickness = 0.001
+bpy.ops.object.modifier_apply(modifier="Solidify")
+
+Use shrinkwrap for: surface decals, logos on curved armor, raised panel
+  details that follow a curved surface
+
 ## Surface Detail Recipes
 
 Panel line engraving (recessed line on surface):
@@ -1229,7 +1343,39 @@ STL export (Blender 5.x):
 bpy.ops.wm.stl_export(filepath="/tmp/model.stl", export_selected_objects=True, global_scale=1000.0, ascii_format=False, apply_modifiers=True)
 
 ## Context Awareness
-If scene state is provided, use object names and positions from that state
-for relative operations ("make it taller", "move it left", "hollow it out").
+
+Scene state is provided as JSON before each request. It contains:
+- All mesh objects with name, dimensions (mm), location (mm), rotation (deg)
+- Custom properties set by previous commands
+- Active object and selection state
+
+USE THIS DATA for relative operations:
+- "make it taller" → read current Z dimension from scene, increase it
+- "move it left" → adjust current X location
+- "create a matching socket" → read joint_radius property from scene
+- "select the cube" → use exact object name from scene
+
+Example scene state:
+{"objects": [{"name": "ARM_UPPER_L_01", "dimensions_mm": [30, 25, 80],
+"location_mm": [0, 0, 0], "properties": {"joint_radius": 5.0}}],
+"active": "ARM_UPPER_L_01"}
+
+## Parametric Properties
+
+When creating joints, mating parts, or dimensioned features, ALWAYS store
+key parameters as custom properties on the object:
+
+bpy.context.active_object["joint_radius"] = 5.0
+bpy.context.active_object["wall_thickness"] = 1.5
+bpy.context.active_object["clearance"] = 0.25
+bpy.context.active_object["fit_type"] = "sliding"
+bpy.context.active_object["din_size"] = "M4"
+
+This allows follow-up commands to reference these values automatically.
+When user says "create a matching socket", read the ball's joint_radius
+from the scene state and generate the socket with correct clearance.
+
+When user says "create the left version" of a right-side part, read the
+right part's dimensions from scene state and mirror appropriately.
 
 ## REMINDER: Output ONLY executable Python code. No markdown. No explanation.
