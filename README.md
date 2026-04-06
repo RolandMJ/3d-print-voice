@@ -17,14 +17,16 @@ Everything runs on your machine. Your GPU handles both the AI model and Blender.
 ## Quick Start
 
 ```bash
-# One-time setup
-curl -fsSL https://ollama.com/install.sh | sudo sh   # Install Ollama
-pip install -r requirements.txt --break-system-packages
-# Install addon/ai_bridge.py in Blender (Edit > Preferences > Add-ons > Install from Disk)
+# Install (copies to /opt, creates venv, adds desktop entry)
+./install.sh
 
 # Run
-./launcher.sh    # or double-click 3DPrintVoice desktop icon
+# Launch from app menu (Graphics → 3DPrintVoice) or:
+/opt/3d-print-voice/launcher.sh
 ```
+
+First launch opens a setup wizard that checks your system and selects the right
+model for your GPU.
 
 See [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) for detailed step-by-step instructions.
 
@@ -41,18 +43,30 @@ See [docs/architecture.svg](docs/architecture.svg) for a visual diagram.
 | `prompts/system.md` | System prompt — LLM's bpy expertise rules |
 | `launcher.sh` | One-click launcher — starts/stops all components |
 
+## Platform
+
+Linux only (Ubuntu 22.04+, Linux Mint 21+). Not compatible with macOS or Windows.
+
+Voice input requires ALSA (`arecord`). The MIC button is automatically disabled
+if no microphone is detected.
+
 ## Requirements
 
-- Blender 5.1+
+- Blender 4.0+ (5.1+ recommended)
 - Python 3.11+
-- NVIDIA GPU with 12GB+ VRAM (for local LLM + voice model)
+- NVIDIA GPU with 3GB+ VRAM (determines model tier):
+  - 12GB+: Full (Qwen2.5-Coder 14B) — best quality
+  - 6-11GB: Medium (Qwen2.5-Coder 7B) — good quality
+  - 3-5GB: Lite (Qwen2.5-Coder 3B) — basic commands
 - Ollama (installed via official script)
-- Qwen2.5-Coder 14B-Instruct (pulled via Ollama, ~9GB)
+
+The first-launch wizard auto-detects your GPU and recommends the best model tier.
 
 ## Project Status
 
 - [x] Phase 1 — Text input to bpy execution (local LLM via Ollama)
-- [ ] Phase 2 — Voice input via faster-whisper
+- [x] Phase 2 — Voice input via faster-whisper
+- [x] Phase 2.5 — GUI control bar, installer, setup wizard
 - [ ] Phase 3 — Scene context awareness
 - [ ] Phase 4 — 3D print intelligence
 
