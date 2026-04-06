@@ -22,28 +22,28 @@
   --border: rgba(255,255,255,0.08);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--fg); padding:12px; font-size:15px; line-height:1.4; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--fg); padding:8px; font-size:16px; line-height:1.3; }
 .hdr { display:flex; justify-content:space-between; align-items:center; padding:8px 14px; background:var(--bg2); border-radius:8px; margin-bottom:10px; border:1px solid var(--border); }
 .hdr h1 { font-size:1.3em; } .hdr h1 span { color:var(--orange); }
 .hdr .v { color:var(--dim); font-size:0.8em; }
 .lang button { padding:4px 10px; border:1px solid var(--border); border-radius:4px; background:transparent; color:var(--dim); cursor:pointer; font-size:0.8em; margin-left:3px; }
 .lang button.on { background:var(--orange); color:#fff; border-color:var(--orange); }
 .toast { position:fixed; top:10px; right:10px; background:var(--green); color:#fff; padding:8px 16px; border-radius:6px; font-size:0.85em; display:none; z-index:999; }
-.cols { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+.cols { display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; }
 .sec { background:var(--card); border-radius:8px; border:1px solid var(--border); overflow:hidden; }
 .sec-h { padding:6px 10px; font-weight:700; font-size:0.85em; text-transform:uppercase; letter-spacing:0.8px; text-align:center; color:#fff; }
 .sec-h.blue{background:var(--blue)} .sec-h.yellow{background:var(--yellow);color:#1a1a2e} .sec-h.green{background:var(--green)} .sec-h.orange{background:var(--orange)} .sec-h.purple{background:var(--purple)} .sec-h.teal{background:var(--teal)} .sec-h.red{background:var(--red)} .sec-h.grey{background:var(--grey)}
-.sec-body { padding:4px; }
-.cmd { padding:5px 8px; margin-bottom:4px; border-radius:5px; cursor:pointer; border-left:3px solid transparent; transition:background 0.1s; }
+.sec-body { padding:3px; }
+.cmd { padding:3px 6px; margin-bottom:2px; border-radius:4px; cursor:pointer; border-left:3px solid transparent; transition:background 0.1s; }
 .cmd:hover { background:rgba(255,255,255,0.08); }
 .cmd:active { background:rgba(232,125,13,0.2); }
-.cmd .label { font-size:0.82em; color:var(--dim); display:block; margin-bottom:1px; }
-.cmd .voice { font-family:'Consolas','Fira Code',monospace; font-size:0.92em; color:var(--fg); font-weight:600; display:block; }
+.cmd .label { font-size:0.85em; color:var(--dim); display:block; }
+.cmd .voice { font-family:'Consolas','Fira Code',monospace; font-size:1em; color:var(--fg); font-weight:600; display:block; }
 .blue-b .cmd{border-left-color:var(--blue)} .yellow-b .cmd{border-left-color:var(--yellow)} .green-b .cmd{border-left-color:var(--green)} .orange-b .cmd{border-left-color:var(--orange)} .purple-b .cmd{border-left-color:var(--purple)} .teal-b .cmd{border-left-color:var(--teal)} .red-b .cmd{border-left-color:var(--red)} .grey-b .cmd{border-left-color:var(--grey)}
 
 .recipe-row { margin-top:8px; }
 .recipe-row .sec-h { border-radius:6px 6px 0 0; }
-.r-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:8px; background:var(--card); border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; }
+.r-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; padding:5px; background:var(--card); border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; }
 .r-group-title { font-size:0.82em; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:2px 6px; border-radius:4px; display:inline-block; margin-bottom:4px; color:#fff; }
 .rg-enc .r-group-title{background:var(--blue)} .rg-hw .r-group-title{background:var(--orange)} .rg-mech .r-group-title{background:var(--purple)} .rg-asm .r-group-title{background:var(--green)} .rg-surf .r-group-title{background:var(--teal)} .rg-org .r-group-title{background:var(--yellow);color:#1a1a2e} .rg-art .r-group-title{background:var(--red)} .rg-curve .r-group-title{background:var(--grey)} .rg-test .r-group-title{background:var(--blue)} .rg-prod .r-group-title{background:var(--orange)} .rg-organic .r-group-title{background:var(--purple)}
 
