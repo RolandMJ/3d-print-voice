@@ -97,8 +97,9 @@ _BLOCKED_PATTERNS = [
     "import os", "import sys", "import subprocess", "import socket",
     "import shutil", "import pathlib",
     "__import__", "eval(", "exec(", "compile(",
-    "open(", "getattr(", "setattr(", "delattr(",
-    "globals(", "locals(", "vars(",
+    "open(",
+    "getattr", "setattr", "delattr",  # no parens — blocks assignment bypass too
+    "globals", "locals", "vars(",
     "os.system", "os.popen", "os.remove", "os.unlink",
     "subprocess.run", "subprocess.Popen", "subprocess.call",
 ]
@@ -114,7 +115,7 @@ def _validate_bpy_code(code):
 
 def _blocked_import(name, *args, **kwargs):
     """Only allow safe imports inside exec'd bpy code."""
-    allowed = {"math", "mathutils", "bmesh", "json"}
+    allowed = {"bpy", "math", "mathutils", "bmesh", "json"}
     if name in allowed:
         import importlib
         return importlib.import_module(name)
@@ -147,7 +148,7 @@ def _execute_bpy(code):
             "tuple": tuple, "set": set, "print": print, "abs": abs,
             "min": min, "max": max, "round": round, "enumerate": enumerate,
             "zip": zip, "sorted": sorted, "reversed": reversed,
-            "isinstance": isinstance, "type": type, "hasattr": hasattr,
+            "isinstance": isinstance,
             "True": True, "False": False, "None": None,
             "__import__": _blocked_import,
             "Exception": Exception, "ValueError": ValueError,

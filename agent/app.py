@@ -332,24 +332,46 @@ ts.use_snap = False
 """
         else:
             s = self._saved_blender_settings
-            snap_elements = s.get("snap_elements", ["INCREMENT"])
-            snap_set = "{" + ", ".join(f"'{e}'" for e in snap_elements) + "}"
+            # Validate all values before interpolation to prevent injection
+            VALID_SYSTEMS = {"METRIC", "IMPERIAL", "NONE"}
+            VALID_LENGTHS = {"ADAPTIVE", "MILLIMETERS", "CENTIMETERS", "METERS",
+                             "KILOMETERS", "MICROMETERS", "MILES", "FEET",
+                             "INCHES", "THOU"}
+            VALID_SNAP = {"INCREMENT", "VERTEX", "EDGE", "FACE", "VOLUME",
+                          "EDGE_MIDPOINT", "EDGE_PERPENDICULAR", "GRID"}
+
+            unit_sys = s.get("unit_system", "METRIC")
+            if unit_sys not in VALID_SYSTEMS:
+                unit_sys = "METRIC"
+            length_unit = s.get("length_unit", "ADAPTIVE")
+            if length_unit not in VALID_LENGTHS:
+                length_unit = "ADAPTIVE"
+            scale = float(s.get("scale_length", 1.0))
+            clip_s = float(s.get("clip_start", 0.1))
+            clip_e = float(s.get("clip_end", 1000))
+            use_snap = bool(s.get("snap", False))
+            snap_els = [e for e in s.get("snap_elements", ["INCREMENT"])
+                        if e in VALID_SNAP]
+            if not snap_els:
+                snap_els = ["INCREMENT"]
+            snap_set = "{" + ", ".join(f"'{e}'" for e in snap_els) + "}"
+
             reset_code = f"""\
 import bpy
 s = bpy.context.scene
-s.unit_settings.system = '{s.get("unit_system", "METRIC")}'
-s.unit_settings.length_unit = '{s.get("length_unit", "ADAPTIVE")}'
-s.unit_settings.scale_length = {s.get("scale_length", 1.0)}
+s.unit_settings.system = '{unit_sys}'
+s.unit_settings.length_unit = '{length_unit}'
+s.unit_settings.scale_length = {scale}
 for a in bpy.context.screen.areas:
     if a.type == 'VIEW_3D':
         for sp in a.spaces:
             if sp.type == 'VIEW_3D':
-                sp.clip_start = {s.get("clip_start", 0.1)}
-                sp.clip_end = {s.get("clip_end", 1000)}
+                sp.clip_start = {clip_s}
+                sp.clip_end = {clip_e}
                 break
         break
 ts = s.tool_settings
-ts.use_snap = {s.get("snap", False)}
+ts.use_snap = {use_snap}
 ts.snap_elements = {snap_set}
 """
         self.root.after(0, self._set_result, "Restoring original settings...", YELLOW)
@@ -521,8 +543,7 @@ ts.snap_elements = {snap_set}
         finally:
             with self._lock:
                 self._processing = False
-            if hasattr(self, '_elapsed_timer'):
-                self.root.after_cancel(self._elapsed_timer)
+            # _update_elapsed self-terminates when _processing is False
             self.root.after(0, self._send_btn.configure,
                             {"state": tk.NORMAL, "bg": ORANGE})
 
