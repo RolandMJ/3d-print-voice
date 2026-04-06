@@ -243,7 +243,7 @@ class SetupWizard:
             return
 
         # Determine recommended tier
-        if vram_gb >= 12:
+        if vram_gb >= 11:
             rec = "full"
         else:
             rec = "medium"
@@ -261,7 +261,7 @@ class SetupWizard:
         for tier_key in ["full", "medium"]:
             name, vram_req, desc = tier_info[tier_key]
             can_run = (
-                (tier_key == "full" and vram_gb >= 12) or
+                (tier_key == "full" and vram_gb >= 11) or
                 (tier_key == "medium" and vram_gb >= 6)
             )
             state = tk.NORMAL if can_run else tk.DISABLED
