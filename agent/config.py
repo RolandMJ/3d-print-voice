@@ -9,7 +9,6 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 MODEL_TIERS = {
     "full":   "qwen2.5-coder:14b-instruct",
     "medium": "qwen2.5-coder:7b-instruct",
-    "lite":   "qwen2.5-coder:3b-instruct",
 }
 
 PRINT_BED_PRESETS = {

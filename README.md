@@ -58,10 +58,9 @@ if no microphone is detected.
 
 - Blender 4.0+ (5.1+ recommended)
 - Python 3.11+
-- NVIDIA GPU with 3GB+ VRAM (determines model tier):
-  - 12GB+: Full (Qwen2.5-Coder 14B) — best quality
-  - 6-11GB: Medium (Qwen2.5-Coder 7B) — good quality
-  - 3-5GB: Lite (Qwen2.5-Coder 3B) — basic commands
+- NVIDIA GPU with 6GB+ VRAM (determines model tier):
+  - 12GB+: Full (Qwen2.5-Coder 14B) — best quality, all recipes
+  - 6-11GB: Medium (Qwen2.5-Coder 7B) — good quality, most recipes
 - Ollama (installed via official script)
 
 The first-launch wizard auto-detects your GPU and recommends the best model tier.

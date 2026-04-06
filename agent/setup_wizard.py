@@ -228,11 +228,12 @@ class SetupWizard:
             w.destroy()
         self._check_btn.pack_forget()
 
-        if vram_gb < 3:
+        if vram_gb < 6:
             tk.Label(self._model_frame, text=(
-                "Your GPU does not have enough VRAM to run a local LLM.\n"
-                "Minimum requirement: 3GB VRAM (dedicated NVIDIA GPU).\n\n"
-                "3DPrintVoice cannot function without a local model.\n"
+                "Your GPU does not have enough VRAM.\n"
+                "Minimum requirement: 6GB VRAM (dedicated NVIDIA GPU).\n\n"
+                "3DPrintVoice needs at least a 7B model to handle\n"
+                "complex recipes (joints, DIN hardware, enclosures).\n"
                 "Consider upgrading your GPU or using a machine with more VRAM."
             ), font=self._font_body, bg=BG, fg=RED, justify=tk.CENTER).pack(pady=12)
 
@@ -244,15 +245,12 @@ class SetupWizard:
         # Determine recommended tier
         if vram_gb >= 12:
             rec = "full"
-        elif vram_gb >= 6:
-            rec = "medium"
         else:
-            rec = "lite"
+            rec = "medium"
 
         tier_info = {
-            "full": ("Full (14B)", "12GB+ VRAM", "Best quality \u2014 handles complex operations"),
-            "medium": ("Medium (7B)", "6GB+ VRAM", "Good quality \u2014 covers most commands"),
-            "lite": ("Lite (3B)", "3GB+ VRAM", "Basic \u2014 simple primitives only"),
+            "full": ("Full (14B)", "12GB+ VRAM", "Best quality \u2014 all recipes, complex assemblies"),
+            "medium": ("Medium (7B)", "6GB+ VRAM", "Good quality \u2014 most commands and recipes"),
         }
 
         tk.Label(self._model_frame, text="Recommended model based on your GPU:",
@@ -260,12 +258,11 @@ class SetupWizard:
 
         self._tier_var = tk.StringVar(value=rec)
 
-        for tier_key in ["full", "medium", "lite"]:
+        for tier_key in ["full", "medium"]:
             name, vram_req, desc = tier_info[tier_key]
             can_run = (
                 (tier_key == "full" and vram_gb >= 12) or
-                (tier_key == "medium" and vram_gb >= 6) or
-                (tier_key == "lite" and vram_gb >= 3)
+                (tier_key == "medium" and vram_gb >= 6)
             )
             state = tk.NORMAL if can_run else tk.DISABLED
 
