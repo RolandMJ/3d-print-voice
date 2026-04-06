@@ -675,7 +675,10 @@ ts.snap_elements = {snap_set}
             latest = matches[-1]
             # Import via Blender — use bpy.ops.wm.stl_import
             import_code = (
-                f'bpy.ops.wm.stl_import(filepath="{latest}")\n'
+                f'try:\n'
+                f'    bpy.ops.wm.stl_import(filepath="{latest}")\n'
+                f'except AttributeError:\n'
+                f'    bpy.ops.import_mesh.stl(filepath="{latest}")\n'
                 f'obj = bpy.context.active_object\n'
                 f'if obj:\n'
                 f'    obj.name = "{part_ref}"\n'
@@ -704,6 +707,7 @@ ts.snap_elements = {snap_set}
     def _do_save_iteration(self, text):
         """Save current active object as a new version to VPS."""
         try:
+            self._ensure_export_dir()
             from agent.design_sync import save_iteration, LOCAL_ACTIVE
             # Export active object from Blender
             export_code = (

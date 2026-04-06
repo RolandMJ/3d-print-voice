@@ -148,13 +148,17 @@ def _execute_bpy(code):
             "tuple": tuple, "set": set, "print": print, "abs": abs,
             "min": min, "max": max, "round": round, "enumerate": enumerate,
             "zip": zip, "sorted": sorted, "reversed": reversed,
-            "isinstance": isinstance,
+            "isinstance": isinstance, "hasattr": hasattr,
+            "any": any, "all": all, "sum": sum, "map": map, "filter": filter,
+            "pow": pow, "divmod": divmod, "iter": iter, "next": next,
+            "repr": repr, "format": format, "chr": chr, "ord": ord,
             "True": True, "False": False, "None": None,
             "__import__": _blocked_import,
             "Exception": Exception, "ValueError": ValueError,
             "TypeError": TypeError, "KeyError": KeyError,
             "IndexError": IndexError, "AttributeError": AttributeError,
             "RuntimeError": RuntimeError, "StopIteration": StopIteration,
+            "ZeroDivisionError": ZeroDivisionError,
         },
     }
     try:

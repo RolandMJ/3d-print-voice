@@ -56,11 +56,37 @@ def _rsync_pull() -> tuple[bool, str]:
             ["rsync", "-az", "--delete",
              f"{VPS_HOST}:{VPS_ACTIVE}/", str(LOCAL_ACTIVE) + "/"],
             capture_output=True, text=True, timeout=120)
-        # Also pull manifest
+        # Pull manifest and merge with local (preserve any local-only entries)
+        vps_manifest_tmp = LOCAL_SYNC_DIR / "manifest_vps.json"
         subprocess.run(
             ["rsync", "-az",
-             f"{VPS_HOST}:{VPS_MANIFEST}", str(LOCAL_MANIFEST)],
+             f"{VPS_HOST}:{VPS_MANIFEST}", str(vps_manifest_tmp)],
             capture_output=True, text=True, timeout=30)
+        # Merge: VPS is primary, but keep any local entries missing from VPS
+        if vps_manifest_tmp.exists():
+            try:
+                local_m = load_manifest()
+                with open(vps_manifest_tmp) as f:
+                    vps_m = json.load(f)
+                merged = {**local_m, **vps_m}
+                # Merge parts: keep the one with more versions
+                merged["parts"] = {}
+                all_keys = set(local_m.get("parts", {}).keys()) | set(vps_m.get("parts", {}).keys())
+                for k in all_keys:
+                    local_part = local_m.get("parts", {}).get(k, {"versions": []})
+                    vps_part = vps_m.get("parts", {}).get(k, {"versions": []})
+                    if len(local_part.get("versions", [])) >= len(vps_part.get("versions", [])):
+                        merged["parts"][k] = local_part
+                    else:
+                        merged["parts"][k] = vps_part
+                with open(LOCAL_MANIFEST, "w") as f:
+                    json.dump(merged, f, indent=2)
+                vps_manifest_tmp.unlink()
+            except Exception:
+                # Fallback: just use VPS version
+                if vps_manifest_tmp.exists():
+                    import shutil as _sh
+                    _sh.move(str(vps_manifest_tmp), str(LOCAL_MANIFEST))
         return result.returncode == 0, result.stderr.strip() or "OK"
     except Exception as e:
         return False, str(e)
