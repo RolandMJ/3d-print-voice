@@ -8,12 +8,12 @@ is assumed.
 
 ## What You Need Before Starting
 
-| Requirement | Status |
+| Requirement | Details |
 |------------|--------|
-| Blender 5.1.0 | Installed (system-wide) |
-| Python 3.12 | Installed |
-| NVIDIA GPU with CUDA (RTX 5070) | Ready |
-| Corsair VOID ELITE headset w/ mic | Connected |
+| Blender 4.0+ | Installed system-wide (5.1+ recommended) |
+| Python 3.11+ | Installed |
+| NVIDIA GPU with CUDA | 6GB+ VRAM (12GB+ recommended for best model) |
+| Microphone (optional) | Any USB or headset mic for voice input |
 | Internet connection | Only needed for first-time setup (downloads) |
 
 After setup, 3DPrintVoice runs completely offline. No cloud services, no API
@@ -47,23 +47,27 @@ need to manually set up CUDA libraries, model formats, and inference servers.
 ## Step 2: Download the AI Model
 
 The AI model is the "brain" that translates your English into Blender code.
-We use Qwen2.5-Coder 14B — a model specifically trained for writing code.
+We use Qwen2.5-Coder — a model specifically trained for writing code.
+Which size depends on your GPU:
 
-1. Run:
+- **12GB+ VRAM:** `qwen2.5-coder:14b-instruct` (Full tier, ~9GB download, best quality)
+- **6-11GB VRAM:** `qwen2.5-coder:7b-instruct` (Medium tier, ~4.5GB download, good quality)
+
+1. Run (pick the one that fits your GPU):
    ```bash
-   ollama pull qwen2.5-coder:14b-instruct
+   ollama pull qwen2.5-coder:14b-instruct    # 12GB+ VRAM
+   # or
+   ollama pull qwen2.5-coder:7b-instruct     # 6-11GB VRAM
    ```
-2. This downloads about **9GB**. It only happens once — after that, the model
-   lives on your hard drive.
+2. This downloads once — after that, the model lives on your hard drive.
 3. Verify it's there:
    ```bash
    ollama list
    ```
-   You should see `qwen2.5-coder:14b-instruct` in the list.
 
-**Why this model?** It's the strongest coding model that fits in your GPU's
-12GB of memory. It was specifically trained on code (not just general text),
+**Why this model?** It's specifically trained on code (not just general text),
 so it writes better Python than general-purpose models of the same size.
+The first-launch wizard auto-detects your GPU and recommends the right tier.
 
 ---
 

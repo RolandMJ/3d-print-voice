@@ -98,25 +98,29 @@ request/response examples so the model knows exactly what format to use.
 
 ---
 
-## What Comes Next
+## Current Status (v0.4.0)
 
-### Phase 2 — Voice Input
-Instead of typing commands, you'll speak to Blender. A speech-to-text model
-(faster-whisper, running locally on your GPU alongside the coding model)
-hears what you say and converts it to text. Then everything works the same
-as Phase 1 — just hands-free.
+**Phases 1-3 are complete.** The project now includes:
 
-### Phase 3 — Context Awareness
-Right now, each command is independent. Phase 3 feeds scene information back
-to the AI after every command, enabling conversational modeling:
+- **Voice input** (Phase 2) — faster-whisper running locally, push-to-talk
+  with silence detection
+- **GUI control bar** (Phase 2.5) — tkinter bar with MIC, SYNC, SLICE,
+  REF buttons and status indicators
+- **Scene context awareness** (Phase 3) — the AI reads all objects, dimensions,
+  and positions after each command, enabling relative commands like "make it
+  taller" or "create a matching socket"
+- **79 commands across 9 categories** — shapes, transforms, booleans,
+  hardware integration, articulation joints, surface detail, curved panels,
+  assembly testing, and STL export
+- **PrusaSlicer integration** — one-click export to slicer
 
-- "Create a box" → box appears
-- "Make it taller" → AI knows which object, makes it taller
-- "Put a hole through it" → AI understands context, does the boolean operation
+### What Comes Next
 
-### Phase 4 — 3D Print Intelligence
-Before exporting for the Prusa MK3, the system checks for overhangs, wall
-thickness, and manifold geometry. Then exports a print-ready STL.
+**Phase 4 — 3D Print Intelligence**
+
+Automatic checks before exporting: overhang detection (flag > 45 degrees),
+wall thickness validation (minimum for nozzle size), and manifold geometry
+verification. Then export a print-ready STL.
 
 ---
 
