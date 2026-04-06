@@ -58,7 +58,7 @@ See [docs/architecture.svg](docs/architecture.svg) for a visual diagram.
 
 ## License
 
-Proprietary. All rights reserved. See [docs/IP_NOTICE.md](docs/IP_NOTICE.md).
+GPL-3.0 — free to use, modify, and distribute. See [LICENSE](LICENSE) and [docs/IP_NOTICE.md](docs/IP_NOTICE.md).
 
 ## Author
 

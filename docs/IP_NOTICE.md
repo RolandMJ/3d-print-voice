@@ -1,17 +1,24 @@
 # Intellectual Property Notice
 
-## Copyright
+## Copyright & License
 
-Copyright (c) 2026 Roland Preisach. All rights reserved.
+Copyright (c) 2026 Roland Preisach.
 
-This software and associated documentation files (the "Software") are the
-proprietary intellectual property of Roland Preisach. Unauthorized copying,
-modification, distribution, or use of this Software, via any medium, is
-strictly prohibited without express written permission from the copyright holder.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <https://www.gnu.org/licenses/>.
 
 ## What This Covers
 
-This IP notice applies to:
+This notice applies to the copyrighted works in this repository:
 
 - The software architecture and system design
 - All source code in this repository
