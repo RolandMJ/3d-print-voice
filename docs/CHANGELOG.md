@@ -5,7 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.4.0] - 2026-04-06
 
-### Added
+### Added — Phase 3: Scene Context & Awareness
+- Scene context: LLM sees all objects, dimensions, locations after each command
+- Relative commands work: "make it taller", "create matching socket"
+- Parametric properties: joints store radius/clearance as custom properties
+- Print bed warning: yellow alert when part exceeds configured bed size
+- Print bed presets: Prusa MK3, Prusa Mini, Ender 3, custom
+- Organic geometry: bezier curve extrusion, subdivision mesh, loft, smooth, shrinkwrap
+- DIN metric hardware: exact M3-M8 clearance holes, DIN 912/7991/934 dimensions
+- Threaded rod (Gewindestange DIN 975) channels with correct OD clearance
+- Spring pin (Spannhülse DIN 1481) and dowel pin (Zylinderstift DIN 7) recipes
+- Curved armor panels: bmesh spin, tapered, overlap lip
+- Articulation joints: ball-socket (S/M/L), ratchet, double-hinge, swivel, friction peg
+
+### Added — Setup & Packaging
 - First-launch setup wizard with system check and model tier selection (Full/Medium/Lite)
 - GPL-3.0 license (replaces proprietary)
 - Linux installer (install.sh) with venv isolation and desktop entry

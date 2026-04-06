@@ -188,6 +188,35 @@ and thickness. The AI handles the geometry.
 | "fillet inside corners 2mm" | Stress-relief radius on internal edges |
 | "chamfer bottom edges 0.5mm" | Elephant foot compensation for printing |
 
+## Organic Geometry (Smooth / Curved Forms)
+
+| Say this | What it does |
+|----------|-------------|
+| "create organic tube along a curve" | Bezier curve extrusion (cables, handles) |
+| "create smooth dome with subdivision" | Low-poly cage + subsurf = smooth organic |
+| "loft between circle and square" | Bridge two cross-sections into smooth surface |
+| "smooth the mesh" | Smooth modifier to soften boolean artifacts |
+| "shrinkwrap detail onto curved panel" | Project flat detail onto curved surface |
+
+**How it works:** Organic shapes use bezier curves (extruded profiles along paths),
+subdivision surfaces (smooth from low-poly cage), and shrinkwrap (flat-to-curved
+projection). These bridge the gap between box-and-boolean and freeform sculpting.
+
+## Scene Context (Relative Commands)
+
+The AI knows what's already in your scene. After each command, it reads all
+object names, dimensions, locations, and custom properties. This enables:
+
+| Say this | What happens |
+|----------|-------------|
+| "make it taller" | Reads current height, increases it |
+| "create a matching socket" | Reads ball joint radius, adds clearance |
+| "create the left version" | Mirrors right-side part from scene |
+| "move it next to the arm" | Reads arm position, places adjacent |
+
+**Print bed warning:** If any part exceeds your print bed (default Prusa MK3:
+250x210x210mm), a yellow warning appears suggesting you split the part.
+
 ## Assembly & Production
 
 | Say this | What it does |

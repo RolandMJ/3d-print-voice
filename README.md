@@ -71,8 +71,8 @@ The first-launch wizard auto-detects your GPU and recommends the best model tier
 - [x] Phase 1 — Text input to bpy execution (local LLM via Ollama)
 - [x] Phase 2 — Voice input via faster-whisper
 - [x] Phase 2.5 — GUI control bar, installer, setup wizard
-- [ ] Phase 3 — Scene context awareness
-- [ ] Phase 4 — 3D print intelligence
+- [x] Phase 3 — Scene context awareness, parametric properties, print bed warnings
+- [ ] Phase 4 — 3D print intelligence (overhang detection, wall thickness check)
 
 ## License
 
