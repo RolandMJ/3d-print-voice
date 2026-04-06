@@ -27,6 +27,20 @@ Each entry records what was built, why, and what decisions were made.
    - Added localhost-only check on addon HTTP endpoint
    - Added code size limit and input length cap
 10. UX improvements: tooltips, command history, elapsed time, log rotation
+11. Second security audit: tightened sandbox (getattr bypass, type removal),
+    fixed f-string injection in print mode restore, launcher quoting
+12. Third pass: tooltip shutdown protection, all LOW findings resolved
+13. Added 20 articulation recipes for poseable figure assemblies:
+    - Joints: ball-and-socket (S/M/L), ratchet, double-hinge, swivel, friction peg
+    - Hardware: metal rod sleeves, countersunk screws, magnet pockets, spring clips
+    - Surface: panel line engraving, raised rivets
+    - Assembly: keyed D-pins, part splitting with zigzag interlock
+14. Part naming convention (REGION_PART_SIDE_NUMBER)
+15. Batch STL export (individual file per mesh object)
+16. Bilingual command reference poster (HTML, EN/DE, 79 entries, 9 categories)
+17. REF button + F2 hotkey in control bar
+
+**System prompt:** 983 lines, 79 commands/recipes across 9 categories.
 
 **Key design decisions:**
 - Local-only (Ollama) — no cloud API support in v0.4

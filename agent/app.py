@@ -189,7 +189,7 @@ class PrintVoiceApp:
             padx=10, pady=4,
         )
         self._ref_btn.pack(side=tk.BOTTOM, expand=True)
-        Tooltip(self._ref_btn, "Open command reference (EN/DE)")
+        Tooltip(self._ref_btn, "Command reference: 79 commands across 9 categories (EN/DE)")
 
         # Separator (left of middle)
         sep2 = tk.Frame(main, bg=BORDER, width=1)

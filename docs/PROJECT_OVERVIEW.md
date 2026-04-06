@@ -13,6 +13,9 @@ you just type (or say) what you want in plain English:
     "create a 40mm cube"
     "make it taller"
     "add a hole through the middle"
+    "create a ball-and-socket joint for the shoulder"
+    "add M3 heat-set insert pockets"
+    "export all parts as STL"
 
 And the object appears (or changes) in Blender, right in front of you.
 
@@ -35,6 +38,11 @@ Think of it like having a bilingual assistant sitting next to you:
 
 The key insight: you never need to learn Blender's interface. The AI knows
 how to speak Blender's language, so you don't have to.
+
+The system includes 79 commands across 9 categories — from basic shapes to
+articulation joints, hardware integration (screws, magnets, metal rods),
+surface detail (panel lines, rivets), and batch STL export. It's built
+specifically for designing complex multi-part 3D-printable assemblies.
 
 ---
 

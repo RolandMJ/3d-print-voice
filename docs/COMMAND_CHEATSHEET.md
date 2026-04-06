@@ -123,6 +123,63 @@ uses snug fit. You can also be explicit: "use 0.3mm clearance per side."
 | "export as STL" | Saves to /tmp/model.stl for slicer |
 | "prepare for printing and export" | Full cleanup + manifold check + export |
 
+## Articulation Joints (Poseable Assemblies)
+
+| Say this | What it does |
+|----------|-------------|
+| "create medium ball-and-socket joint" | 10mm ball + socket (shoulders, hips, neck) |
+| "create small ball joint" | 6mm ball (wrists, ankles, fingers) |
+| "create large ball joint" | 14mm ball (torso-hip, shoulder base) |
+| "create ratchet joint with 12 stops" | Click-stop joint (holds poses under gravity) |
+| "create double-hinge knee joint" | 2-axis articulation (knees, elbows) |
+| "create swivel joint for waist" | Single-axis rotation (waist, forearm twist) |
+| "create friction peg joint 4mm" | D-shape tight-fit rotation (wrists, ankles) |
+
+## Hardware Integration (Metal Parts)
+
+| Say this | What it does |
+|----------|-------------|
+| "add 6mm steel rod sleeve" | Channel for 6mm metal rod (3/4/6/8mm available) |
+| "add M3 heat-set insert pocket" | Tapered pocket for brass threaded insert |
+| "add M3 screw boss with ribs" | Reinforced mounting post with gussets |
+| "add countersunk M3 hole" | Flush bolt head recess |
+| "add magnet pocket 6x3mm" | Recessed pocket for disc magnet |
+| "add spring clip detent" | Flexible clip for removable panel retention |
+| "add zip-tie anchor point" | Loop/bridge for cable management |
+
+## Surface Detail
+
+| Say this | What it does |
+|----------|-------------|
+| "engrave panel line 30mm long" | 0.3mm deep recessed line on surface |
+| "add raised rivet detail" | 2mm hex bolt head decoration |
+| "add 4 reinforcement ribs" | Structural gussets at wall-base junction |
+| "fillet inside corners 2mm" | Stress-relief radius on internal edges |
+| "chamfer bottom edges 0.5mm" | Elephant foot compensation for printing |
+
+## Assembly & Production
+
+| Say this | What it does |
+|----------|-------------|
+| "add keyed alignment pin 6mm" | D-shape pin (prevents rotation) |
+| "split part at 50mm with zigzag" | Interlocking seam for oversize parts |
+| "add dovetail rail 80mm long" | Linear slide channel |
+| "add T-slot channel for M4" | Adjustable bolt channel |
+| "export all parts as STL" | Batch export (individual file per object) |
+
+## Part Naming Convention
+
+When building multi-part assemblies, the AI follows this naming pattern:
+`REGION_PART_SIDE_NUMBER` — e.g., ARM_UPPER_L_01, TORSO_PANEL_FRONT_01
+
+| Word you say | Naming result |
+|-------------|---------------|
+| "left upper arm" | ARM_UPPER_L_01 |
+| "right knee joint" | JOINT_KNEE_R_01 |
+| "chest front panel" | TORSO_PANEL_FRONT_01 |
+| "head" | HEAD_MAIN_C_01 |
+| "foot sole" | FOOT_SOLE_R_01 |
+
 ## Scene Management
 
 | Say this | What it does |

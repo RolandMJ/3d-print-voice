@@ -67,24 +67,25 @@ so it writes better Python than general-purpose models of the same size.
 
 ---
 
-## Step 3: Install Python Dependencies
+## Step 3: Install 3DPrintVoice
 
-1. Navigate to the project folder:
-   ```bash
-   cd /opt/3d-print-voice
-   ```
-2. Install:
-   ```bash
-   pip install -r requirements.txt --break-system-packages
-   ```
+The installer handles everything automatically:
 
-This installs:
-- **sounddevice** — captures audio from your Corsair headset microphone
-- **faster-whisper** — converts your speech to text using your GPU
+```bash
+./install.sh
+```
 
-**Why `--break-system-packages`?** Ubuntu/Mint manages Python packages
-carefully. This flag tells pip it's OK to install alongside system packages.
-It's safe for our use.
+This will:
+1. Copy the project to `/opt/3d-print-voice`
+2. Create a Python virtual environment (isolated, won't affect system packages)
+3. Install dependencies (faster-whisper, numpy)
+4. Create a desktop entry (appears in Graphics menu)
+
+**On first launch,** a setup wizard will:
+1. Detect your GPU and VRAM
+2. Recommend the best model tier (Full/Medium/Lite) for your hardware
+3. Check that Ollama and Blender are installed
+4. Save your settings
 
 ---
 

@@ -6,13 +6,17 @@ Fully local — no cloud APIs, no internet required, no cost per use.
 ## How It Works
 
 ```
-You type "create a 40mm cube"
-    → Local LLM generates Python/bpy code (Ollama + Qwen2.5-Coder 14B)
+You say "create a 40mm cube" or "make a ball-and-socket joint" or "export all parts as STL"
+    → Local LLM generates Python/bpy code (Ollama + Qwen2.5-Coder)
         → Code sent via HTTP to Blender addon
-            → Cube appears in Blender viewport
+            → Result appears in Blender viewport
 ```
 
-Everything runs on your machine. Your GPU handles both the AI model and Blender.
+79 commands across 9 categories: shapes, transforms, modifiers, booleans,
+hardware integration, articulation joints, surface detail, assembly, and export.
+Built for designing complex multi-part 3D-printable assemblies.
+
+Everything runs on your machine. No cloud, no internet, no cost per use.
 
 ## Quick Start
 

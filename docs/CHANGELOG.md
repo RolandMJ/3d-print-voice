@@ -17,6 +17,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Hover tooltips on status dots and 3D Print button
 - Elapsed time display during LLM generation
 - GUI error dialogs when launcher fails (works with Terminal=false)
+- 79 commands/recipes across 9 categories in system prompt (983 lines)
+- Articulation joint recipes: ball-and-socket (S/M/L), ratchet, double-hinge,
+  swivel, friction peg — for poseable multi-part figure assemblies
+- Hardware integration: metal rod sleeves (3/4/6/8mm), countersunk screws,
+  magnet pockets, spring clip detents
+- Surface detail: panel line engraving, raised rivet/bolt details
+- Assembly features: keyed D-pin alignment, part splitting with zigzag interlock
+- Batch STL export (individual file per mesh object)
+- Part naming convention: REGION_PART_SIDE_NUMBER (e.g., ARM_UPPER_L_01)
+- Bilingual command reference poster (HTML, EN/DE, print-optimized A2)
+- REF button + F2 hotkey opens command reference in browser
 
 ### Changed
 - Project renamed: BlenderAI → 3DPrintVoice
@@ -46,6 +57,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Code size limit (10KB) on bpy execution
 - Input length cap (2000 chars) on LLM requests
 - GUI error helper prevents shell injection (gui_error.py)
+- Sandbox: tightened blocked patterns (getattr/setattr without parens)
+- Sandbox: removed type/hasattr from restricted builtins
+- Launcher: CONFIG_FILE passed via sys.argv, not string interpolation
+- Tooltip: graceful shutdown handling (TclError protection)
+- Sanitized f-string interpolation in 3D print mode restore (enum whitelist validation)
 
 ## [0.3.0] - 2026-04-05
 

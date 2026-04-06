@@ -30,6 +30,7 @@ Response (result, error if any) → back to agent
 - External agent: Python 3.11+, faster-whisper, numpy
 - Voice: faster-whisper with model "base.en", device="cpu" (avoids VRAM exhaustion)
 - LLM: Ollama + configurable model tier (Full: 14B, Medium: 7B, Lite: 3B)
+- System prompt: 983 lines, 79 commands/recipes across 9 categories
 
 ## Project Structure
 
