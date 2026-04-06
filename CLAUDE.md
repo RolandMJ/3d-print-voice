@@ -1,4 +1,4 @@
-# BlenderAI — AI Voice & Command Interface for Blender
+# 3DPrintVoice — Voice & Text Command Interface for 3D Printing in Blender
 
 ## Project Goal
 A local AI-driven interface that lets the user control Blender via voice or
@@ -33,7 +33,7 @@ Response (scene state, error if any) → back to agent
 
 ## Project Structure
 
-blender-ai/
+3d-print-voice/
 ├── CLAUDE.md
 ├── README.md
 ├── requirements.txt

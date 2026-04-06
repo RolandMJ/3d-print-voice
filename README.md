@@ -1,8 +1,7 @@
-# BlenderAI
+# 3DPrintVoice
 
-AI-powered natural language interface for Blender. Type (or speak) what you
-want in plain English, and it appears in Blender's 3D viewport. Fully local —
-no cloud APIs, no internet required, no cost per use.
+Voice & text command interface for creating 3D-printable objects in Blender.
+Fully local — no cloud APIs, no internet required, no cost per use.
 
 ## How It Works
 
@@ -24,7 +23,7 @@ pip install -r requirements.txt --break-system-packages
 # Install addon/ai_bridge.py in Blender (Edit > Preferences > Add-ons > Install from Disk)
 
 # Run
-./launcher.sh    # or double-click BlenderAI desktop icon
+./launcher.sh    # or double-click 3DPrintVoice desktop icon
 ```
 
 See [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) for detailed step-by-step instructions.

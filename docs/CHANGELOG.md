@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to BlenderAI are documented in this file.
+All notable changes to 3DPrintVoice (formerly BlenderAI) are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.3.0] - 2026-04-05
@@ -36,7 +36,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Error retry: automatic re-generation when Blender reports execution errors
 - Undo support: each AI command is undoable via Ctrl+Z in Blender
 - One-click launcher (launcher.sh) that starts/stops all components
-- Linux desktop entry (blender-ai.desktop) for app menu integration
+- Linux desktop entry for app menu integration
 - Test suite with 12 tests for code extraction and LLM client
 - Implementation plan document
 

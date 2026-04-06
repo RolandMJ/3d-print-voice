@@ -1,4 +1,4 @@
-# BlenderAI Command Cheat Sheet
+# 3DPrintVoice Command Cheat Sheet
 
 Say or type these commands. Dimensions are always in millimeters.
 The AI handles the conversion to Blender units automatically.
@@ -163,6 +163,6 @@ These operations are very hard to automate and may produce unreliable results:
 - Lofting between arbitrary profiles
 - Selecting specific individual faces by visual appearance
 
-For fully parametric engineering CAD, consider FreeCAD. BlenderAI excels at
+For fully parametric engineering CAD, consider FreeCAD. 3DPrintVoice excels at
 quick shape creation, boolean-based part building, multi-part assemblies
 with print-ready tolerances, and 3D print preparation.

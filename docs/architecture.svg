@@ -21,7 +21,7 @@
   <rect width="900" height="720" rx="12" fill="#f8fafc"/>
 
   <!-- Title -->
-  <text x="450" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">BlenderAI Architecture — Fully Local</text>
+  <text x="450" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">3DPrintVoice Architecture — Fully Local</text>
   <text x="450" y="62" text-anchor="middle" font-size="13" fill="#64748b">Everything runs on your machine. No internet. No cloud. No cost.</text>
 
   <!-- GPU Badge -->

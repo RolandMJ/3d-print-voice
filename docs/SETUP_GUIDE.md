@@ -1,6 +1,6 @@
-# BlenderAI — Complete Setup Guide (Beginner-Friendly)
+# 3DPrintVoice — Complete Setup Guide (Beginner-Friendly)
 
-This guide walks you through every step needed to get BlenderAI running on
+This guide walks you through every step needed to get 3DPrintVoice running on
 your machine. No prior experience with Python projects or Blender addons
 is assumed.
 
@@ -16,7 +16,7 @@ is assumed.
 | Corsair VOID ELITE headset w/ mic | Connected |
 | Internet connection | Only needed for first-time setup (downloads) |
 
-After setup, BlenderAI runs completely offline. No cloud services, no API
+After setup, 3DPrintVoice runs completely offline. No cloud services, no API
 keys, no ongoing costs.
 
 ---
@@ -71,7 +71,7 @@ so it writes better Python than general-purpose models of the same size.
 
 1. Navigate to the project folder:
    ```bash
-   cd ~/Documents/Claude\ Projects/blender-ai
+   cd /opt/3d-print-voice
    ```
 2. Install:
    ```bash
@@ -105,7 +105,7 @@ server) that lets our AI agent send commands to Blender.
    - Click **Install from Disk...**
 
 4. **Navigate to the addon file:**
-   - Go to: `Documents/Claude Projects/blender-ai/addon/`
+   - Go to: `/opt/3d-print-voice/addon/`
    - Select `ai_bridge.py`
    - Click **Install from Disk**
 
@@ -130,14 +130,14 @@ our agent sends letters (code), and the addon delivers them to Blender.
 
 ---
 
-## Step 5: Run BlenderAI
+## Step 5: Run 3DPrintVoice
 
 ### Option A: The Launcher (Recommended)
 
 The launcher starts everything automatically:
 
 ```bash
-cd ~/Documents/Claude\ Projects/blender-ai
+cd /opt/3d-print-voice
 ./launcher.sh
 ```
 
@@ -152,10 +152,10 @@ It will:
 For double-click launch from your desktop:
 
 ```bash
-cp ~/Documents/Claude\ Projects/blender-ai/blender-ai.desktop ~/.local/share/applications/
+cp /opt/3d-print-voice/3d-print-voice.desktop ~/.local/share/applications/
 ```
 
-Now "BlenderAI" appears in your app menu.
+Now "3DPrintVoice" appears in your app menu.
 
 ### Option C: Manual Start (each component separately)
 
@@ -165,7 +165,7 @@ If you prefer to control each piece:
 2. Open Blender with addon enabled
 3. In a separate terminal:
    ```bash
-   cd ~/Documents/Claude\ Projects/blender-ai
+   cd /opt/3d-print-voice
    python3 -m agent.main
    ```
 
@@ -173,7 +173,7 @@ If you prefer to control each piece:
 
 ## Step 6: Try Your First Command
 
-With BlenderAI running, type at the `>>>` prompt:
+With 3DPrintVoice running, type at the `>>>` prompt:
 
 ```
 create a 40mm cube

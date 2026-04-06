@@ -1,6 +1,6 @@
-# BlenderAI — Development Log
+# 3DPrintVoice — Development Log
 
-This log documents the development history of BlenderAI, serving as evidence
+This log documents the development history of 3DPrintVoice (formerly BlenderAI), serving as evidence
 of intellectual property creation, design decisions, and progressive development.
 
 Each entry records what was built, why, and what decisions were made.

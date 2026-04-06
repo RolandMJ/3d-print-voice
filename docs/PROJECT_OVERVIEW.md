@@ -1,4 +1,4 @@
-# BlenderAI — What Is This and How Does It Work?
+# 3DPrintVoice — What Is This and How Does It Work?
 
 ## The Big Idea
 
@@ -7,7 +7,7 @@ everything from movie special effects to 3D-printed objects. But it has a
 steep learning curve. You need to learn dozens of menus, keyboard shortcuts,
 and concepts just to make a simple box.
 
-**BlenderAI lets you skip all that.** Instead of learning Blender's interface,
+**3DPrintVoice lets you skip all that.** Instead of learning Blender's interface,
 you just type (or say) what you want in plain English:
 
     "create a 40mm cube"
@@ -45,9 +45,9 @@ Phase 1 is the working skeleton — the minimum needed to prove the idea works.
 ### The Files and What They Do
 
 ```
-blender-ai/
+3d-print-voice/
 ├── launcher.sh              ← Double-click to start everything
-├── blender-ai.desktop       ← App menu icon for Linux
+├── 3d-print-voice.desktop   ← App menu icon for Linux
 ├── addon/
 │   └── ai_bridge.py         ← Lives INSIDE Blender (the door to send commands through)
 ├── agent/

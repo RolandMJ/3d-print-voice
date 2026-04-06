@@ -3,7 +3,7 @@ bl_info = {
     "blender": (4, 0, 0),
     "category": "Interface",
     "version": (0, 1, 0),
-    "author": "BlenderAI",
+    "author": "3DPrintVoice",
     "description": "HTTP server that receives and executes bpy code from an external AI agent",
 }
 

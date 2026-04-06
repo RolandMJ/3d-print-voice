@@ -1142,7 +1142,7 @@ bpy.data.objects.remove(counterbore)
 |-----------|-----|
 | **Organic sculpting via script** | Sculpt tools are interactive-only in practice. You can call operators but controlling brush strokes programmatically produces poor results. |
 | **Automatic support generation** | Slicer territory (PrusaSlicer/Cura). Blender has no built-in support generation. |
-| **Parametric constraint system** | No auto-updating linked dimensions. Tolerance offsets are applied manually per part — BlenderAI automates this via system prompt rules for Prusa MK3 (0.25mm sliding, 0.15mm snug, 0.05mm press fit). |
+| **Parametric constraint system** | No auto-updating linked dimensions. Tolerance offsets are applied manually per part — 3DPrintVoice automates this via system prompt rules for Prusa MK3 (0.25mm sliding, 0.15mm snug, 0.05mm press fit). |
 | **GD&T / dimensioning** | No measurement/annotation system for manufacturing. Use FreeCAD for this. |
 | **Adaptive mesh refinement** | Remesh modifier exists but it's global, not adaptive to feature size. |
 
@@ -1167,5 +1167,5 @@ bpy.data.objects.remove(counterbore)
 
 ---
 
-*Generated for blender-ai project. Target: Blender 5.1.0, Prusa MK3 printer.*
+*Generated for 3d-print-voice project. Target: Blender 5.1.0, Prusa MK3 printer.*
 *All measurements assume Blender default unit = meters, 3D print target = mm.*

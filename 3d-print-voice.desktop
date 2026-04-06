@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=3DPrintVoice
+Comment=Voice & text command interface for 3D-printable objects in Blender
+Exec=bash -c '/opt/3d-print-voice/launcher.sh'
+Icon=3d-print-voice
+Terminal=false
+Categories=Graphics;3DGraphics;Engineering;
+Keywords=blender;3d;printing;voice;modeling;
+StartupNotify=true

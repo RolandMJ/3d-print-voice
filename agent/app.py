@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""BlenderAI Control Bar — Blender-themed top bar GUI.
+"""3DPrintVoice Control Bar — Blender-themed top bar GUI.
 
 Provides text and voice input for controlling Blender via natural language.
 Sits at the top of the screen, always on top, with status indicators.
@@ -54,12 +54,12 @@ class StatusDot(tk.Canvas):
         self.itemconfig(self._dot, fill=YELLOW)
 
 
-class BlenderAIApp:
+class PrintVoiceApp:
     """Main application — Blender-themed control bar."""
 
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("BlenderAI")
+        self.root.title("3DPrintVoice")
         self.root.configure(bg=BG)
         self.root.attributes("-topmost", True)
 
@@ -557,7 +557,7 @@ ts.snap_elements = {snap_set}
 
 
 def main():
-    app = BlenderAIApp()
+    app = PrintVoiceApp()
     app.run()
 
 

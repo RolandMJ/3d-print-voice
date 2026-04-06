@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""BlenderAI — text input loop.
+"""3DPrintVoice — text input loop.
 
 Type a natural language command, local LLM generates bpy code, the code is
 sent to Blender via the AI Bridge addon, and the result appears in the viewport.
@@ -80,7 +80,7 @@ def _try_generate_and_execute(user_text: str) -> None:
 
 
 def main():
-    print("BlenderAI — local mode (Ollama + Qwen2.5-Coder)")
+    print("3DPrintVoice — local mode (Ollama + Qwen2.5-Coder)")
     print("Type a command for Blender. 'quit' to exit.\n")
 
     if not blender_client.health_check():

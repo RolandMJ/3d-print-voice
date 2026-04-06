@@ -1,4 +1,4 @@
-# Pushing BlenderAI to GitHub — Step by Step
+# Pushing 3DPrintVoice to GitHub — Step by Step
 
 You already have SSH keys configured. This guide walks you through creating
 a GitHub repository and pushing your code to it.
@@ -9,14 +9,14 @@ a GitHub repository and pushing your code to it.
 
 1. Open your browser: https://github.com/new
 2. Fill in:
-   - **Repository name:** `blender-ai`
+   - **Repository name:** `3d-print-voice`
    - **Description:** `AI-powered natural language interface for Blender`
    - **Visibility:** Select **Private** (you own the IP — keep it private until
      you decide to share)
    - **Do NOT** check "Add a README" or ".gitignore" — we already have those
 3. Click **Create repository**
 4. GitHub shows you a page with setup instructions — you need the SSH URL.
-   It looks like: `git@github.com:YourUsername/blender-ai.git`
+   It looks like: `git@github.com:YourUsername/3d-print-voice.git`
 
 **Why private?** This is your intellectual property. A private repo means only
 you can see it. You can make it public later if you want. Keeping it private
@@ -32,8 +32,8 @@ where the remote (GitHub) copy lives.
 Open a terminal and run:
 
 ```bash
-cd ~/Documents/Claude\ Projects/blender-ai
-git remote add origin git@github.com:YourUsername/blender-ai.git
+cd ~/Documents/Claude\ Projects/3d-print-voice
+git remote add origin git@github.com:YourUsername/3d-print-voice.git
 ```
 
 Replace `YourUsername` with your actual GitHub username.
@@ -58,7 +58,7 @@ You should see output like:
 ```
 Enumerating objects: 22, done.
 ...
-To github.com:YourUsername/blender-ai.git
+To github.com:YourUsername/3d-print-voice.git
  * [new branch]      main -> main
 branch 'main' set up to track 'origin/main'.
 ```
@@ -67,7 +67,7 @@ branch 'main' set up to track 'origin/main'.
 
 ## Step 4: Verify
 
-1. Go to `https://github.com/YourUsername/blender-ai` in your browser
+1. Go to `https://github.com/YourUsername/3d-print-voice` in your browser
 2. You should see all your files listed
 3. Click on a few files to verify the content is there
 
