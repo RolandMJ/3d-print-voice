@@ -83,7 +83,7 @@ This will:
 
 **On first launch,** a setup wizard will:
 1. Detect your GPU and VRAM
-2. Recommend the best model tier (Full/Medium/Lite) for your hardware
+2. Recommend the best model tier (Full/Medium) for your hardware
 3. Check that Ollama and Blender are installed
 4. Save your settings
 

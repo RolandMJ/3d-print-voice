@@ -14,7 +14,7 @@ faster-whisper (local, CPU, base.en) → text
     ↓
 agent/app.py (GUI control bar)
     ↓
-Ollama (localhost:11434) → configurable model (Full/Medium/Lite)
+Ollama (localhost:11434) → configurable model (Full/Medium)
     ↓  system prompt: bpy expert → returns executable bpy Python code
 HTTP POST → localhost:6789
     ↓
@@ -29,8 +29,8 @@ Response (result, error if any) → back to agent
 - Blender addon: stdlib + bpy only (Blender's isolated Python env)
 - External agent: Python 3.11+, faster-whisper, numpy
 - Voice: faster-whisper with model "base.en", device="cpu" (avoids VRAM exhaustion)
-- LLM: Ollama + configurable model tier (Full: 14B, Medium: 7B, Lite: 3B)
-- System prompt: 983 lines, 79 commands/recipes across 9 categories
+- LLM: Ollama + configurable model tier (Full: 14B, Medium: 7B)
+- System prompt: 1556 lines, 110+ commands/recipes across 12 categories
 
 ## Project Structure
 

@@ -19,7 +19,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Articulation joints: ball-socket (S/M/L), ratchet, double-hinge, swivel, friction peg
 
 ### Added — Setup & Packaging
-- First-launch setup wizard with system check and model tier selection (Full/Medium/Lite)
+- First-launch setup wizard with system check and model tier selection (Full/Medium)
 - GPL-3.0 license (replaces proprietary)
 - Linux installer (install.sh) with venv isolation and desktop entry
 - Linux uninstaller (uninstall.sh) with optional config removal
@@ -41,6 +41,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Part naming convention: REGION_PART_SIDE_NUMBER (e.g., ARM_UPPER_L_01)
 - Bilingual command reference poster (HTML, EN/DE, print-optimized A2)
 - REF button + F2 hotkey opens command reference in browser
+- PrusaSlicer integration: SLICE button (F3), status dot, smart instance management
+- VPS design sync: versioned FreeCAD → Blender workflow with manifest audit trail
+- Assembly testing: load full assembly, interference check, clearance measurement,
+  cross-section view, range-of-motion test, center-of-gravity balance check
+- Dropped 3B lite tier — minimum 6GB VRAM (7B medium) required
 
 ### Changed
 - Project renamed: BlenderAI → 3DPrintVoice

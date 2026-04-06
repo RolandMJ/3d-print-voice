@@ -16,7 +16,7 @@ Each entry records what was built, why, and what decisions were made.
 2. Renamed project: BlenderAI → 3DPrintVoice (16 files, display name + identifiers)
 3. Switched from proprietary to GPL-3.0 license
 4. Created first-launch setup wizard (splash screen → system check → model tier selection)
-5. Created config module (~/.config/3d-print-voice/config.json) with Full/Medium/Lite model tiers
+5. Created config module (~/.config/3d-print-voice/config.json) with Full/Medium model tiers
 6. Restructured launcher.sh — wizard runs BEFORE services, GUI error dialogs
 7. Created install.sh/uninstall.sh with venv isolation
 8. Created app icon (SVG + PNG)
@@ -39,8 +39,14 @@ Each entry records what was built, why, and what decisions were made.
 15. Batch STL export (individual file per mesh object)
 16. Bilingual command reference poster (HTML, EN/DE, 79 entries, 9 categories)
 17. REF button + F2 hotkey in control bar
+18. PrusaSlicer integration: SLICE button (F3), smart single-instance management
+19. VPS design sync: versioned storage, manifest audit trail, Vivobook push scripts
+20. Assembly testing: load full assembly, interference check, clearance, cross-section,
+    range-of-motion, center-of-gravity/balance check
+21. Dropped 3B lite tier — minimum 6GB VRAM required
+22. 5 audit rounds: sandbox hardening, command routing, mic fix, builtins, manifest merge
 
-**System prompt:** 983 lines, 79 commands/recipes across 9 categories.
+**System prompt:** 1556 lines, 110+ commands/recipes across 12 categories.
 
 **Key design decisions:**
 - Local-only (Ollama) — no cloud API support in v0.4
