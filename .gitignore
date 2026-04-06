@@ -25,5 +25,8 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Virtual environment (created by install.sh)
+venv/
+
 # Claude Code
 .claude/
