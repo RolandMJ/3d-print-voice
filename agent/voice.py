@@ -113,7 +113,8 @@ class VoiceRecorder:
         if self._recording:
             return
 
-        self._wav_path = tempfile.mktemp(suffix=".wav")
+        fd, self._wav_path = tempfile.mkstemp(suffix=".wav")
+        os.close(fd)  # arecord will write to this path
         self._recording = True
 
         # Start arecord as subprocess
