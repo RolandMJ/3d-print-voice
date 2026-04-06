@@ -3,6 +3,50 @@
 All notable changes to 3DPrintVoice (formerly BlenderAI) are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-04-06
+
+### Added
+- First-launch setup wizard with system check and model tier selection (Full/Medium/Lite)
+- GPL-3.0 license (replaces proprietary)
+- Linux installer (install.sh) with venv isolation and desktop entry
+- Linux uninstaller (uninstall.sh) with optional config removal
+- App icon (SVG + PNG)
+- Config module (~/.config/3d-print-voice/config.json)
+- 3D print mode toggle button in control bar
+- Command history (up/down arrows, max 50)
+- Hover tooltips on status dots and 3D Print button
+- Elapsed time display during LLM generation
+- GUI error dialogs when launcher fails (works with Terminal=false)
+
+### Changed
+- Project renamed: BlenderAI → 3DPrintVoice
+- Launcher restructured: setup wizard runs before services
+- LLM model name read from config (configurable via wizard)
+- Blender addon: exec() sandboxed with restricted builtins and blocked patterns
+- LLM timeout reduced from 120s to 30s
+- Error messages display up to 120 chars (was 80)
+- Log rotation: max 10 session files
+- Embedded bpy code moved to external files in prompts/
+- Dependency versions pinned in requirements.txt
+
+### Fixed
+- Shell injection vulnerability in launcher error display
+- Unrestricted exec() with full __builtins__ access
+- tempfile.mktemp() race condition in voice recording
+- MIC button now disabled when no microphone detected
+- Threading race condition on _processing flag
+- Desktop entry uses direct Exec path instead of bash -c wrapper
+- Launcher verifies Python dependencies after venv activation
+- Launcher verifies model download after ollama pull
+
+### Security
+- Blocked dangerous patterns in bpy code execution (os, subprocess, eval, etc.)
+- Restricted __builtins__ in exec scope (only safe builtins allowed)
+- Localhost-only origin check on addon HTTP endpoint
+- Code size limit (10KB) on bpy execution
+- Input length cap (2000 chars) on LLM requests
+- GUI error helper prevents shell injection (gui_error.py)
+
 ## [0.3.0] - 2026-04-05
 
 ### Added

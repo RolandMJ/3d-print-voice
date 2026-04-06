@@ -7,6 +7,42 @@ Each entry records what was built, why, and what decisions were made.
 
 ---
 
+## Session Handoff — Where We Left Off (2026-04-06)
+
+**Current version:** v0.4.0
+
+**What was done in this session:**
+1. Added 3D print mode toggle button to header bar (captures/restores Blender viewport settings)
+2. Renamed project: BlenderAI → 3DPrintVoice (16 files, display name + identifiers)
+3. Switched from proprietary to GPL-3.0 license
+4. Created first-launch setup wizard (splash screen → system check → model tier selection)
+5. Created config module (~/.config/3d-print-voice/config.json) with Full/Medium/Lite model tiers
+6. Restructured launcher.sh — wizard runs BEFORE services, GUI error dialogs
+7. Created install.sh/uninstall.sh with venv isolation
+8. Created app icon (SVG + PNG)
+9. Security audit and remediation:
+   - Sandboxed exec() with restricted builtins and blocked dangerous patterns
+   - Fixed shell injection in launcher error display (gui_error.py helper)
+   - Fixed tempfile.mktemp() race condition
+   - Added localhost-only check on addon HTTP endpoint
+   - Added code size limit and input length cap
+10. UX improvements: tooltips, command history, elapsed time, log rotation
+
+**Key design decisions:**
+- Local-only (Ollama) — no cloud API support in v0.4
+- Model tier auto-selection based on GPU VRAM detection
+- Wizard runs before any services start (solves chicken-and-egg problem)
+- All launcher errors shown via tkinter dialogs (Terminal=false compatible)
+- exec() sandbox uses pattern blocklist + restricted builtins (not a whitelist parser)
+
+**Known limitations carried forward:**
+- Linux-only (no macOS/Windows)
+- Addon installed via --python flag, not Blender's addon manager
+- No scene context awareness yet (Phase 3)
+- No cross-session command history persistence
+
+---
+
 ## Session Handoff — Where We Left Off (2026-04-05)
 
 **Current version:** v0.3.0 (14 commits on main, pushed to GitHub)
