@@ -147,6 +147,37 @@ uses snug fit. You can also be explicit: "use 0.3mm clearance per side."
 | "add spring clip detent" | Flexible clip for removable panel retention |
 | "add zip-tie anchor point" | Loop/bridge for cable management |
 
+## DIN Metric Hardware (German Baumarkt)
+
+Holes use exact DIN clearance dimensions. Say the screw size and the AI
+uses the correct H13 tolerance hole.
+
+| Say this | DIN Standard | Key dimensions |
+|----------|-------------|---------------|
+| "add M4 DIN 912 counterbore" | Socket head cap | 4.5mm shaft, 7mm head, 4mm deep |
+| "add M4 hex nut pocket" | DIN 934 | 7mm hex, 3.2mm deep |
+| "add M6 threaded rod channel" | DIN 975 | 6.6mm clearance (thread OD > nominal) |
+| "add 3mm spring pin hole" | DIN 1481 | Exact 3mm — pin compresses to fit |
+| "add 4mm dowel pin hole" | DIN 7 | 4.05mm (0.05mm press fit clearance) |
+| "add M3 countersunk hole" | DIN 7991 | 3.4mm shaft, 6mm head recess |
+
+**Available sizes at Baumarkt:** M3, M4, M5, M6, M8 screws. Smooth rods: 3-10mm.
+Threaded rods: M4-M10. Spring pins: 2-5mm. Dowel pins: 3-6mm.
+
+## Curved Panels (Armor / Shell Geometry)
+
+| Say this | What it does |
+|----------|-------------|
+| "create curved panel 60mm wide 90 degrees" | Swept arc panel (bmesh spin) |
+| "create shoulder pauldron 120 degrees" | Wide curved panel, r=35mm |
+| "create tapered armor panel" | Wider top, narrower bottom, curved |
+| "create curved tube 90 degrees radius 30mm" | Structural arc, handle, frame |
+| "add overlap lip to panel edge" | 2mm inward lip for layered armor |
+
+**How it works:** Curved panels use bmesh spin — a 2D profile is swept along
+an arc to create a curved 3D surface. You specify width, arc angle, radius,
+and thickness. The AI handles the geometry.
+
 ## Surface Detail
 
 | Say this | What it does |
