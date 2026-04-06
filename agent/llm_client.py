@@ -42,7 +42,7 @@ def _ollama_chat(system: str, user_message: str) -> str:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read())
     return data["message"]["content"]
 
@@ -59,8 +59,14 @@ def extract_code(raw: str) -> str:
     return raw.strip()
 
 
+MAX_INPUT_LENGTH = 2000
+
+
 def generate_bpy_code(user_text: str, scene_context: str = "") -> str:
     """Generate bpy code from natural language via local Ollama model."""
+    if len(user_text) > MAX_INPUT_LENGTH:
+        return f"# CANNOT_EXECUTE: input too long ({len(user_text)} chars, max {MAX_INPUT_LENGTH})"
+
     system = _load_system_prompt()
 
     user_message = user_text

@@ -8,6 +8,7 @@ Sits at the top of the screen, always on top, with status indicators.
 import datetime
 import subprocess
 import threading
+import time
 import tkinter as tk
 from tkinter import font as tkfont
 from pathlib import Path
@@ -406,10 +407,20 @@ ts.snap_elements = {snap_set}
         if self._processing:
             return
         self._processing = True
+        self._cmd_start = time.monotonic()
         self._send_btn.configure(state=tk.DISABLED, bg=BG_FIELD)
         self._set_result(f'"{text}" — generating code...', YELLOW)
+        self._elapsed_timer = self.root.after(1000, self._update_elapsed, text)
         threading.Thread(target=self._run_pipeline, args=(text,),
                          daemon=True).start()
+
+    def _update_elapsed(self, text):
+        """Show elapsed seconds during processing."""
+        if not self._processing:
+            return
+        elapsed = int(time.monotonic() - self._cmd_start)
+        self._set_result(f'"{text}" — generating... ({elapsed}s)', YELLOW)
+        self._elapsed_timer = self.root.after(1000, self._update_elapsed, text)
 
     def _run_pipeline(self, text):
         """Execute the full command pipeline (background thread)."""
@@ -454,7 +465,7 @@ ts.snap_elements = {snap_set}
                                     f'"{text}" — Done (retry).', FG_RESULT)
                     self._log(text, bpy_retry, result_retry)
                 else:
-                    short_err = error.split("\n")[-2] if "\n" in error else error[:80]
+                    short_err = error.split("\n")[-2] if "\n" in error else error[:120]
                     self.root.after(0, self._set_result,
                                     f'"{text}" — Failed: {short_err}', FG_ERROR)
                     self._log(text, bpy_retry, result_retry)
@@ -464,6 +475,8 @@ ts.snap_elements = {snap_set}
                             f'Error: {str(e)[:80]}', FG_ERROR)
         finally:
             self._processing = False
+            if hasattr(self, '_elapsed_timer'):
+                self.root.after_cancel(self._elapsed_timer)
             self.root.after(0, self._send_btn.configure,
                             {"state": tk.NORMAL, "bg": ORANGE})
 
