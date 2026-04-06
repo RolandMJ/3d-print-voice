@@ -32,14 +32,8 @@ fi
 
 # --- GUI error helper (shows tkinter messagebox when Terminal=false) ---
 _gui_error() {
-    local msg="$1"
-    python3 -c "
-import tkinter as tk
-from tkinter import messagebox
-root = tk.Tk(); root.withdraw()
-messagebox.showerror('3DPrintVoice', '$msg')
-root.destroy()
-" 2>/dev/null || echo "[3DPrintVoice] ERROR: $msg"
+    python3 "$PROJECT_DIR/agent/gui_error.py" "$1" 2>/dev/null \
+        || echo "[3DPrintVoice] ERROR: $1"
 }
 
 # --- First-run check: launch wizard BEFORE starting any services ---
