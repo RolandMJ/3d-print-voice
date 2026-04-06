@@ -153,6 +153,7 @@ class PrintVoiceApp:
         self.root.bind_all("<F1>", lambda e: self._toggle_mic())
         self.root.bind_all("<F2>", lambda e: self._open_reference())
         self.root.bind_all("<F3>", lambda e: self._send_to_slicer())
+        self.root.bind_all("<F4>", lambda e: self._sync_designs())
 
     def _build_ui(self):
         """Build the two-row control bar."""
@@ -207,8 +208,18 @@ class PrintVoiceApp:
             cursor="hand2", command=self._send_to_slicer,
             padx=6, pady=3,
         )
-        self._slice_btn.pack(side=tk.RIGHT, expand=True, fill=tk.X)
+        self._slice_btn.pack(side=tk.LEFT, expand=True, fill=tk.X)
         Tooltip(self._slice_btn, "Export active object and open in PrusaSlicer")
+
+        self._sync_btn = tk.Button(
+            btn_row, text="SYNC", font=self._font_status,
+            bg=BG_FIELD, fg=FG_DIM, activebackground=GREEN,
+            activeforeground="white", relief=tk.FLAT,
+            cursor="hand2", command=self._sync_designs,
+            padx=6, pady=3,
+        )
+        self._sync_btn.pack(side=tk.LEFT, expand=True, fill=tk.X)
+        Tooltip(self._sync_btn, "Pull designs from VPS / push iterations")
 
         # Separator (left of middle)
         sep2 = tk.Frame(main, bg=BORDER, width=1)
@@ -503,6 +514,24 @@ ts.snap_elements = {snap_set}
         except Exception as e:
             self.root.after(0, self._set_result,
                             f"Slicer error: {str(e)[:80]}", FG_ERROR)
+
+    def _sync_designs(self):
+        """Pull latest designs from VPS."""
+        self._set_result("Syncing designs from VPS...", YELLOW)
+        threading.Thread(target=self._run_sync, daemon=True).start()
+
+    def _run_sync(self):
+        """Background: pull designs from VPS."""
+        try:
+            from agent.design_sync import pull_designs, init_vps_structure
+            # Ensure VPS structure exists
+            init_vps_structure()
+            ok, msg = pull_designs()
+            color = FG_RESULT if ok else FG_ERROR
+            self.root.after(0, self._set_result, msg, color)
+        except Exception as e:
+            self.root.after(0, self._set_result,
+                            f"Sync error: {str(e)[:80]}", FG_ERROR)
 
     def _open_reference(self):
         """Open the command reference HTML in the default browser."""

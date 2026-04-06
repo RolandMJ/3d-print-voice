@@ -1354,6 +1354,30 @@ if obj and obj.type == 'MESH':
 When user says "send to slicer" or "open in PrusaSlicer": export the active
 object as STL. The SLICE button on the control bar handles opening PrusaSlicer.
 
+Import design from sync folder (FreeCAD → Blender):
+import pathlib
+sync_dir = pathlib.Path.home() / "3dprintvoice-designs" / "active"
+# Find latest version of requested part
+stl_files = sorted(sync_dir.glob("PART_KEY_*.stl"))
+if stl_files:
+    latest = str(stl_files[-1])
+    bpy.ops.wm.stl_import(filepath=latest)
+    obj = bpy.context.active_object
+    # Clean imported mesh
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.remove_doubles(threshold=0.0001)
+    bpy.ops.mesh.tris_convert_to_quads(face_threshold=0.698, shape_threshold=0.698)
+    bpy.ops.mesh.normals_make_consistent(inside=False)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+When user says "import [part name]": find the latest version in the sync
+folder, import STL, auto-clean the mesh (remove doubles, tris-to-quads,
+fix normals). Apply the part naming convention to the imported object.
+
+When user says "save iteration": the SYNC system handles versioning.
+The control bar SYNC button (F4) pulls/pushes designs to VPS.
+
 ## Context Awareness
 
 Scene state is provided as JSON before each request. It contains:
