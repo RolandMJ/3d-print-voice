@@ -310,7 +310,16 @@ class SetupWizard:
         config["first_run_done"] = True
         save_config(config)
         self._completed = True
-        self.root.destroy()
+
+        # Show brief confirmation before closing
+        self._clear()
+        frame = tk.Frame(self.root, bg=BG, padx=40, pady=60)
+        frame.pack(fill=tk.BOTH, expand=True)
+        tk.Label(frame, text="Setup complete!", font=self._font_title,
+                 bg=BG, fg=GREEN).pack(pady=(0, 16))
+        tk.Label(frame, text="Starting 3DPrintVoice...", font=self._font_body,
+                 bg=BG, fg=FG_DIM).pack()
+        self.root.after(2000, self.root.destroy)
 
     def _on_close(self):
         self.root.destroy()
