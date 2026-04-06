@@ -80,10 +80,13 @@ class PrintVoiceApp:
         self._font_btn = tkfont.Font(family="sans-serif", size=12, weight="bold")
 
         # State
+        self._lock = threading.Lock()
         self._processing = False
         self._cmd_count = 0
         self._print_mode = False
         self._saved_blender_settings = None
+        self._cmd_history = []
+        self._history_idx = -1
 
         # Voice
         self._recorder = VoiceRecorder(on_auto_stop=self._on_voice_result)
@@ -404,9 +407,10 @@ ts.snap_elements = {snap_set}
 
     def _process_command(self, text):
         """Full pipeline: text → LLM → Blender. Runs in background."""
-        if self._processing:
-            return
-        self._processing = True
+        with self._lock:
+            if self._processing:
+                return
+            self._processing = True
         self._cmd_start = time.monotonic()
         self._send_btn.configure(state=tk.DISABLED, bg=BG_FIELD)
         self._set_result(f'"{text}" — generating code...', YELLOW)
@@ -474,7 +478,8 @@ ts.snap_elements = {snap_set}
             self.root.after(0, self._set_result,
                             f'Error: {str(e)[:80]}', FG_ERROR)
         finally:
-            self._processing = False
+            with self._lock:
+                self._processing = False
             if hasattr(self, '_elapsed_timer'):
                 self.root.after_cancel(self._elapsed_timer)
             self.root.after(0, self._send_btn.configure,
@@ -515,10 +520,12 @@ ts.snap_elements = {snap_set}
             sd.query_devices(kind="input")
             if self._whisper_loaded:
                 self.root.after(0, self._dot_mic.set_ok)
+                self.root.after(0, self._mic_btn.configure, {"state": tk.NORMAL})
             else:
                 self.root.after(0, self._dot_mic.set_warn)
         except Exception:
             self.root.after(0, self._dot_mic.set_error)
+            self.root.after(0, self._mic_btn.configure, {"state": tk.DISABLED})
 
         # VRAM
         try:
