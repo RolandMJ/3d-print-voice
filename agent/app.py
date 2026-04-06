@@ -260,52 +260,7 @@ class PrintVoiceApp:
 
     # --- 3D Print Mode ---
 
-    _BPY_CAPTURE_SETTINGS = """\
-import bpy, json
-s = bpy.context.scene
-area = None
-space = None
-for a in bpy.context.screen.areas:
-    if a.type == 'VIEW_3D':
-        area = a
-        for sp in a.spaces:
-            if sp.type == 'VIEW_3D':
-                space = sp
-                break
-        break
-settings = {
-    "unit_system": s.unit_settings.system,
-    "length_unit": s.unit_settings.length_unit,
-    "scale_length": s.unit_settings.scale_length,
-}
-if space:
-    r3d = space.region_3d if hasattr(space, 'region_3d') else None
-    settings["clip_start"] = space.clip_start
-    settings["clip_end"] = space.clip_end
-ts = s.tool_settings
-settings["snap"] = ts.use_snap
-settings["snap_elements"] = list(ts.snap_elements)
-result = json.dumps(settings)
-"""
-
-    _BPY_APPLY_PRINT_MODE = """\
-import bpy
-s = bpy.context.scene
-s.unit_settings.system = 'METRIC'
-s.unit_settings.length_unit = 'MILLIMETERS'
-s.unit_settings.scale_length = 0.001
-for a in bpy.context.screen.areas:
-    if a.type == 'VIEW_3D':
-        for sp in a.spaces:
-            if sp.type == 'VIEW_3D':
-                sp.clip_start = 0.1
-                sp.clip_end = 100000
-                break
-        break
-ts = s.tool_settings
-ts.use_snap = True
-ts.snap_elements = {'INCREMENT'}
-"""
+    _PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
     def _toggle_print_mode(self):
         """Toggle between normal and 3D-print-optimized Blender settings."""
@@ -320,7 +275,7 @@ ts.snap_elements = {'INCREMENT'}
         """Capture current settings, then apply 3D print config."""
         self.root.after(0, self._set_result, "Capturing Blender settings...", YELLOW)
         # Capture current settings
-        capture_result = blender_client.execute(self._BPY_CAPTURE_SETTINGS)
+        capture_result = blender_client.execute((self._PROMPTS_DIR / "print_mode_capture.py").read_text())
         if capture_result["status"] == "ok":
             try:
                 import json
@@ -331,7 +286,7 @@ ts.snap_elements = {'INCREMENT'}
 
         # Apply 3D print settings
         self.root.after(0, self._set_result, "Applying 3D print settings...", YELLOW)
-        result = blender_client.execute(self._BPY_APPLY_PRINT_MODE)
+        result = blender_client.execute((self._PROMPTS_DIR / "print_mode_apply.py").read_text())
         if result["status"] == "ok":
             self._print_mode = True
             self.root.after(0, self._print_btn.configure,
