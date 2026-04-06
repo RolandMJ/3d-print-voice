@@ -199,7 +199,7 @@ class PrintVoiceApp:
             padx=6, pady=3,
         )
         self._ref_btn.pack(side=tk.LEFT, expand=True, fill=tk.X)
-        Tooltip(self._ref_btn, "Command reference: 100+ commands (EN/DE)")
+        Tooltip(self._ref_btn, "F2: Command reference — 100+ commands (EN/DE)")
 
         self._slice_btn = tk.Button(
             btn_row, text="SLICE", font=self._font_status,
@@ -209,7 +209,7 @@ class PrintVoiceApp:
             padx=6, pady=3,
         )
         self._slice_btn.pack(side=tk.LEFT, expand=True, fill=tk.X)
-        Tooltip(self._slice_btn, "Export active object and open in PrusaSlicer")
+        Tooltip(self._slice_btn, "F3: Export active object → PrusaSlicer")
 
         self._sync_btn = tk.Button(
             btn_row, text="SYNC", font=self._font_status,
@@ -219,7 +219,7 @@ class PrintVoiceApp:
             padx=6, pady=3,
         )
         self._sync_btn.pack(side=tk.LEFT, expand=True, fill=tk.X)
-        Tooltip(self._sync_btn, "Pull designs from VPS / push iterations")
+        Tooltip(self._sync_btn, "F4: Sync designs with VPS")
 
         # Separator (left of middle)
         sep2 = tk.Frame(main, bg=BORDER, width=1)
@@ -633,9 +633,190 @@ ts.snap_elements = {snap_set}
         self._set_result(f'"{text}" — generating... ({elapsed}s)', YELLOW)
         self._elapsed_timer = self.root.after(1000, self._update_elapsed, text)
 
+    def _handle_special_command(self, text):
+        """Handle built-in commands that don't go through LLM. Returns True if handled."""
+        lower = text.lower().strip()
+
+        # Import from design sync
+        if lower.startswith("import "):
+            part_ref = text[7:].strip().upper().replace(" ", "_")
+            return self._do_import_part(part_ref)
+
+        # Save iteration
+        if lower in ("save iteration", "save version", "push iteration"):
+            return self._do_save_iteration(text)
+
+        # Mark as final
+        if "mark" in lower and "final" in lower:
+            return self._do_mark_final(text)
+
+        # Reopen for changes
+        if "reopen" in lower:
+            return self._do_reopen(text)
+
+        # Archive old drafts
+        if "archive" in lower and "draft" in lower:
+            return self._do_archive()
+
+        return False  # Not a special command — send to LLM
+
+    def _do_import_part(self, part_ref):
+        """Import a design from the sync folder into Blender."""
+        try:
+            from agent.design_sync import pull_designs, get_latest_file, LOCAL_ACTIVE
+            # Pull latest from VPS first
+            pull_designs()
+            # Find the file
+            matches = sorted(LOCAL_ACTIVE.glob(f"{part_ref}*.stl")) if LOCAL_ACTIVE.exists() else []
+            if not matches:
+                self.root.after(0, self._set_result,
+                    f"No design found matching '{part_ref}' — sync first (F4)", FG_ERROR)
+                return True
+            latest = matches[-1]
+            # Import via Blender — use bpy.ops.wm.stl_import
+            import_code = (
+                f'bpy.ops.wm.stl_import(filepath="{latest}")\n'
+                f'obj = bpy.context.active_object\n'
+                f'if obj:\n'
+                f'    obj.name = "{part_ref}"\n'
+                f'    bpy.ops.object.mode_set(mode="EDIT")\n'
+                f'    bpy.ops.mesh.select_all(action="SELECT")\n'
+                f'    bpy.ops.mesh.remove_doubles(threshold=0.0001)\n'
+                f'    bpy.ops.mesh.tris_convert_to_quads(face_threshold=0.698, shape_threshold=0.698)\n'
+                f'    bpy.ops.mesh.normals_make_consistent(inside=False)\n'
+                f'    bpy.ops.object.mode_set(mode="OBJECT")\n'
+                f'    result = "Imported " + obj.name\n'
+            )
+            result = blender_client.execute(import_code)
+            if result["status"] == "ok":
+                self.root.after(0, self._set_result,
+                    f"Imported {latest.name} into Blender", FG_RESULT)
+                self._update_scene_context()
+            else:
+                err = result.get("error", "")[:100]
+                self.root.after(0, self._set_result,
+                    f"Import failed: {err}", FG_ERROR)
+        except Exception as e:
+            self.root.after(0, self._set_result,
+                f"Import error: {str(e)[:80]}", FG_ERROR)
+        return True
+
+    def _do_save_iteration(self, text):
+        """Save current active object as a new version to VPS."""
+        try:
+            from agent.design_sync import save_iteration, LOCAL_ACTIVE
+            # Export active object from Blender
+            export_code = (
+                'obj = bpy.context.active_object\n'
+                'if obj and obj.type == "MESH":\n'
+                '    bpy.ops.object.select_all(action="DESELECT")\n'
+                '    obj.select_set(True)\n'
+                '    filepath = "/tmp/3dprintvoice/_iteration_export.stl"\n'
+                '    bpy.ops.wm.stl_export(filepath=filepath, export_selected_objects=True, '
+                'global_scale=1000.0, ascii_format=False, apply_modifiers=True)\n'
+                '    result = obj.name + "|" + filepath\n'
+                'else:\n'
+                '    result = "NO_MESH"\n'
+            )
+            result = blender_client.execute(export_code)
+            if result["status"] != "ok" or result.get("result") == "NO_MESH":
+                self.root.after(0, self._set_result,
+                    "No active mesh to save", FG_ERROR)
+                return True
+
+            obj_info = result["result"]
+            if "|" in obj_info:
+                obj_name, stl_path = obj_info.split("|", 1)
+            else:
+                self.root.after(0, self._set_result, "Export failed", FG_ERROR)
+                return True
+
+            # Parse name: expect REGION_PART_SIDE format
+            parts = obj_name.split("_")
+            if len(parts) >= 3:
+                region, part, side = parts[0], parts[1], parts[2]
+            else:
+                region, part, side = "PART", obj_name, "C"
+
+            ok, msg = save_iteration(
+                Path(stl_path), region, part, side,
+                status="DRAFT", source="blender", notes=f"Iteration from Blender")
+            color = FG_RESULT if ok else FG_ERROR
+            self.root.after(0, self._set_result, msg, color)
+        except Exception as e:
+            self.root.after(0, self._set_result,
+                f"Save error: {str(e)[:80]}", FG_ERROR)
+        return True
+
+    def _do_mark_final(self, text):
+        """Mark a part as FINAL."""
+        try:
+            from agent.design_sync import mark_final
+            # Try to get part name from active object
+            query_code = (
+                'obj = bpy.context.active_object\n'
+                'result = obj.name if obj else "NONE"\n'
+            )
+            result = blender_client.execute(query_code)
+            obj_name = result.get("result", "NONE") if result["status"] == "ok" else "NONE"
+            if obj_name == "NONE":
+                self.root.after(0, self._set_result, "No active object to mark", FG_ERROR)
+                return True
+            parts = obj_name.split("_")
+            if len(parts) >= 3:
+                region, part, side = parts[0], parts[1], parts[2]
+            else:
+                region, part, side = "PART", obj_name, "C"
+            ok, msg = mark_final(region, part, side)
+            color = FG_RESULT if ok else FG_ERROR
+            self.root.after(0, self._set_result, msg, color)
+        except Exception as e:
+            self.root.after(0, self._set_result,
+                f"Mark final error: {str(e)[:80]}", FG_ERROR)
+        return True
+
+    def _do_reopen(self, text):
+        """Reopen a FINAL part for changes."""
+        try:
+            from agent.design_sync import reopen_for_changes
+            query_code = 'obj = bpy.context.active_object\nresult = obj.name if obj else "NONE"\n'
+            result = blender_client.execute(query_code)
+            obj_name = result.get("result", "NONE") if result["status"] == "ok" else "NONE"
+            if obj_name == "NONE":
+                self.root.after(0, self._set_result, "No active object to reopen", FG_ERROR)
+                return True
+            parts = obj_name.split("_")
+            if len(parts) >= 3:
+                region, part, side = parts[0], parts[1], parts[2]
+            else:
+                region, part, side = "PART", obj_name, "C"
+            ok, msg = reopen_for_changes(region, part, side)
+            color = FG_RESULT if ok else FG_ERROR
+            self.root.after(0, self._set_result, msg, color)
+        except Exception as e:
+            self.root.after(0, self._set_result,
+                f"Reopen error: {str(e)[:80]}", FG_ERROR)
+        return True
+
+    def _do_archive(self):
+        """Archive old draft versions."""
+        try:
+            from agent.design_sync import archive_old_drafts
+            ok, msg = archive_old_drafts()
+            color = FG_RESULT if ok else FG_ERROR
+            self.root.after(0, self._set_result, msg, color)
+        except Exception as e:
+            self.root.after(0, self._set_result,
+                f"Archive error: {str(e)[:80]}", FG_ERROR)
+        return True
+
     def _run_pipeline(self, text):
         """Execute the full command pipeline (background thread)."""
         try:
+            # Check for built-in commands first (import, save, mark, archive)
+            if self._handle_special_command(text):
+                return
+
             # Generate bpy code with scene context
             bpy_code = generate_bpy_code(text, scene_context=self._scene_context)
 
@@ -666,7 +847,7 @@ ts.snap_elements = {snap_set}
                     f"The previous code failed with this error:\n{error}\n\n"
                     f"Original request: {text}\n\nFix the code."
                 )
-                bpy_retry = generate_bpy_code(retry_prompt)
+                bpy_retry = generate_bpy_code(retry_prompt, scene_context=self._scene_context)
                 result_retry = blender_client.execute(bpy_retry)
 
                 if result_retry["status"] == "ok":
@@ -757,10 +938,12 @@ ts.snap_elements = {snap_set}
             self.root.after(0, self._dot_ollama.set_error)
             self.root.after(0, self._tip_ollama.update_text, "Ollama: not running")
 
-        # Mic
+        # Mic (check arecord availability, not sounddevice)
         try:
-            import sounddevice as sd
-            sd.query_devices(kind="input")
+            import shutil
+            arecord_ok = shutil.which("arecord") is not None
+            if not arecord_ok:
+                raise RuntimeError("arecord not found")
             if self._whisper_loaded:
                 self.root.after(0, self._dot_mic.set_ok)
                 self.root.after(0, self._mic_btn.configure, {"state": tk.NORMAL})

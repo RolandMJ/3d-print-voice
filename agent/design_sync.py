@@ -301,6 +301,8 @@ def archive_old_drafts() -> tuple[bool, str]:
                 archived += 1
 
     if archived > 0:
+        # Save updated manifest (files now moved to archive)
+        save_manifest(manifest)
         # Push changes to VPS
         subprocess.run(
             ["rsync", "-az", "--delete",

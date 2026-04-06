@@ -53,9 +53,9 @@ class CommandHandler(BaseHTTPRequestHandler):
         # Send code to main thread and wait for result
         _command_queue.put(bpy_code)
         try:
-            result = _result_queue.get(timeout=30)
+            result = _result_queue.get(timeout=120)
         except Empty:
-            self._respond(504, {"status": "error", "error": "Execution timed out (30s)"})
+            self._respond(504, {"status": "error", "error": "Execution timed out (120s)"})
             return
 
         status_code = 200 if result["status"] == "ok" else 500

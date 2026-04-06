@@ -164,7 +164,7 @@ m['parts'][key]['versions'].append({
     'date': '$TIMESTAMP',
     'source': 'freecad',
     'file': '$FILENAME',
-    'notes': '$NOTES'
+    'notes': '$(echo "$NOTES" | tr "'" " ")'
 })
 m['parts'][key]['current_version'] = $VERSION
 m['parts'][key]['current_status'] = 'DRAFT'

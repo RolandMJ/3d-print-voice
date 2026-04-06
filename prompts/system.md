@@ -1354,29 +1354,14 @@ if obj and obj.type == 'MESH':
 When user says "send to slicer" or "open in PrusaSlicer": export the active
 object as STL. The SLICE button on the control bar handles opening PrusaSlicer.
 
-Import design from sync folder (FreeCAD → Blender):
-import pathlib
-sync_dir = pathlib.Path.home() / "3dprintvoice-designs" / "active"
-# Find latest version of requested part
-stl_files = sorted(sync_dir.glob("PART_KEY_*.stl"))
-if stl_files:
-    latest = str(stl_files[-1])
-    bpy.ops.wm.stl_import(filepath=latest)
-    obj = bpy.context.active_object
-    # Clean imported mesh
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.mesh.remove_doubles(threshold=0.0001)
-    bpy.ops.mesh.tris_convert_to_quads(face_threshold=0.698, shape_threshold=0.698)
-    bpy.ops.mesh.normals_make_consistent(inside=False)
-    bpy.ops.object.mode_set(mode='OBJECT')
-
-When user says "import [part name]": find the latest version in the sync
-folder, import STL, auto-clean the mesh (remove doubles, tris-to-quads,
-fix normals). Apply the part naming convention to the imported object.
-
-When user says "save iteration": the SYNC system handles versioning.
-The control bar SYNC button (F4) pulls/pushes designs to VPS.
+BUILT-IN COMMANDS (handled by the control bar, NOT by bpy code):
+- "import [PART_NAME]" → imports STL from sync folder into Blender
+- "save iteration" → exports active object, versions it, pushes to VPS
+- "mark as final" → marks active part as print-ready
+- "reopen for changes" → reopens a FINAL part as new DRAFT
+- "archive old drafts" → compresses old versions to save space
+These commands are intercepted BEFORE reaching the LLM. Do NOT generate
+bpy code for them — the control bar handles the full workflow.
 
 ## Context Awareness
 
