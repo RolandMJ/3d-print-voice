@@ -581,8 +581,11 @@ ts.snap_elements = {snap_set}
     # --- Logging ---
 
     def _log(self, user_text, bpy_code, result):
-        """Log command to session file."""
+        """Log command to session file. Rotates to keep max 10 log files."""
         LOG_DIR.mkdir(exist_ok=True)
+        logs = sorted(LOG_DIR.glob("session_*.log"))
+        while len(logs) > 9:
+            logs.pop(0).unlink()
         log_file = LOG_DIR / f"session_{datetime.date.today().isoformat()}.log"
         with open(log_file, "a") as f:
             f.write(f"\n{'='*60}\n")
