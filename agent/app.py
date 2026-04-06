@@ -138,6 +138,7 @@ class PrintVoiceApp:
 
         # Global key binding
         self.root.bind_all("<F1>", lambda e: self._toggle_mic())
+        self.root.bind_all("<F2>", lambda e: self._open_reference())
 
     def _build_ui(self):
         """Build the two-row control bar."""
@@ -169,8 +170,18 @@ class PrintVoiceApp:
             cursor="hand2", command=self._toggle_print_mode,
             padx=10, pady=6, width=10,
         )
-        self._print_btn.pack(expand=True)
+        self._print_btn.pack(side=tk.TOP, expand=True)
         Tooltip(self._print_btn, "Toggle 3D print view: metric units, mm, snap to grid")
+
+        self._ref_btn = tk.Button(
+            mid, text=" REF ", font=self._font_status,
+            bg=BG_FIELD, fg=FG_DIM, activebackground=ORANGE,
+            activeforeground="white", relief=tk.FLAT,
+            cursor="hand2", command=self._open_reference,
+            padx=10, pady=4,
+        )
+        self._ref_btn.pack(side=tk.BOTTOM, expand=True)
+        Tooltip(self._ref_btn, "Open command reference (EN/DE)")
 
         # Separator (left of middle)
         sep2 = tk.Frame(main, bg=BORDER, width=1)
@@ -355,6 +366,15 @@ ts.snap_elements = {snap_set}
                             f"Restore failed: {err}", FG_ERROR)
 
     # --- Actions ---
+
+    def _open_reference(self):
+        """Open the command reference HTML in the default browser."""
+        ref_path = Path(__file__).resolve().parent.parent / "docs" / "command-reference.html"
+        if ref_path.exists():
+            subprocess.Popen(["xdg-open", str(ref_path)],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            self._set_result("Reference file not found", FG_ERROR)
 
     def _send_command(self):
         """Send typed text to LLM → Blender."""
