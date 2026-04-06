@@ -152,7 +152,7 @@ This removes the SECONDARY key reference and the specific key file paths.
 **Step 1: Run comprehensive grep**
 
 ```bash
-grep -rn 'SCRUBBED_PATTERN\|user@\|/home/user\|/home/user\|secondary\|sk-ant-' --include='*.py' --include='*.sh' --include='*.md' --include='*.html' .
+grep -rn 'SENSITIVE_PATTERN' --include='*.py' --include='*.sh' --include='*.md' --include='*.html' .
 ```
 
 Expected: zero matches
@@ -214,7 +214,7 @@ git filter-repo --replace-text /tmp/replacements.txt --force
 **Step 4: Verify history is clean**
 
 ```bash
-git log --all -p | grep -cP 'SCRUBBED_PATTERN|/user@|/home/user|/home/user|secondary|YOUR_API_KEY_HERE'
+git log --all -p | grep -cP 'SENSITIVE_PATTERN'
 ```
 
 Expected: `0`
@@ -268,7 +268,7 @@ cd /tmp && git clone git@github.com:RolandMJ/blender-ai.git test-public-audit &&
 **Step 2: Full history audit on fresh clone**
 
 ```bash
-git log --all -p | grep -ciP 'SCRUBBED_PATTERN|user@your-vps|/home/user|/home/user|secondary|YOUR_API_KEY_HERE|sk-ant-your'
+git log --all -p | grep -ciP 'SENSITIVE_PATTERN'
 ```
 
 Expected: `0`
