@@ -19,13 +19,39 @@ PRINT_BED_PRESETS = {
     "custom": {"x": 200, "y": 200, "z": 200},
 }
 
+SLICER_SEARCH_PATHS = [
+    "prusa-slicer",
+    "PrusaSlicer",
+    "/usr/bin/prusa-slicer",
+    "/usr/local/bin/prusa-slicer",
+    "/snap/bin/prusa-slicer",
+]
+
 DEFAULT_CONFIG = {
     "model": "qwen2.5-coder:14b-instruct",
     "model_tier": "full",
     "first_run_done": False,
     "print_bed": {"x": 250, "y": 210, "z": 210},
     "print_bed_preset": "prusa_mk3",
+    "slicer_path": "",
 }
+
+
+def find_slicer() -> str:
+    """Auto-detect PrusaSlicer installation. Returns path or empty string."""
+    import shutil
+    for path in SLICER_SEARCH_PATHS:
+        found = shutil.which(path)
+        if found:
+            return found
+    # Check common AppImage locations
+    from pathlib import Path
+    for appimage_dir in [Path.home() / "Applications", Path("/opt")]:
+        if appimage_dir.exists():
+            for f in appimage_dir.iterdir():
+                if "prusaslicer" in f.name.lower() and f.is_file():
+                    return str(f)
+    return ""
 
 
 def load_config() -> dict:

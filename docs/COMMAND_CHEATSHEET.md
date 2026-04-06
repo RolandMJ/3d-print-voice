@@ -121,6 +121,7 @@ uses snug fit. You can also be explicit: "use 0.3mm clearance per side."
 | "apply all transforms" | Bakes position/rotation/scale |
 | "check if it's manifold" | Verifies mesh is watertight |
 | "export as STL" | Saves to /tmp/model.stl for slicer |
+| "send to slicer" or SLICE button (F3) | Exports active object → opens PrusaSlicer |
 | "prepare for printing and export" | Full cleanup + manifold check + export |
 
 ## Articulation Joints (Poseable Assemblies)

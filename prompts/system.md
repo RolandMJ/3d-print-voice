@@ -1342,6 +1342,18 @@ bpy.ops.object.mode_set(mode='OBJECT')
 STL export (Blender 5.x):
 bpy.ops.wm.stl_export(filepath="/tmp/model.stl", export_selected_objects=True, global_scale=1000.0, ascii_format=False, apply_modifiers=True)
 
+Export for slicer (exports active object, returns path for PrusaSlicer):
+obj = bpy.context.active_object
+if obj and obj.type == 'MESH':
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    filepath = "/tmp/" + obj.name + ".stl"
+    bpy.ops.wm.stl_export(filepath=filepath, export_selected_objects=True, global_scale=1000.0, ascii_format=False, apply_modifiers=True)
+    result = filepath
+
+When user says "send to slicer" or "open in PrusaSlicer": export the active
+object as STL. The SLICE button on the control bar handles opening PrusaSlicer.
+
 ## Context Awareness
 
 Scene state is provided as JSON before each request. It contains:

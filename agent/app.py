@@ -128,6 +128,7 @@ class PrintVoiceApp:
         self._cmd_history = []
         self._history_idx = -1
         self._scene_context = ""
+        self._slicer_path = ""
 
         # Voice
         self._recorder = VoiceRecorder(on_auto_stop=self._on_voice_result)
@@ -148,6 +149,7 @@ class PrintVoiceApp:
         # Global key binding
         self.root.bind_all("<F1>", lambda e: self._toggle_mic())
         self.root.bind_all("<F2>", lambda e: self._open_reference())
+        self.root.bind_all("<F3>", lambda e: self._send_to_slicer())
 
     def _build_ui(self):
         """Build the two-row control bar."""
@@ -182,15 +184,28 @@ class PrintVoiceApp:
         self._print_btn.pack(side=tk.TOP, expand=True)
         Tooltip(self._print_btn, "Toggle 3D print view: metric units, mm, snap to grid")
 
+        btn_row = tk.Frame(mid, bg=BG)
+        btn_row.pack(side=tk.BOTTOM, fill=tk.X)
+
         self._ref_btn = tk.Button(
-            mid, text=" REF ", font=self._font_status,
+            btn_row, text="REF", font=self._font_status,
             bg=BG_FIELD, fg=FG_DIM, activebackground=ORANGE,
             activeforeground="white", relief=tk.FLAT,
             cursor="hand2", command=self._open_reference,
-            padx=10, pady=4,
+            padx=6, pady=3,
         )
-        self._ref_btn.pack(side=tk.BOTTOM, expand=True)
-        Tooltip(self._ref_btn, "Command reference: 79 commands across 9 categories (EN/DE)")
+        self._ref_btn.pack(side=tk.LEFT, expand=True, fill=tk.X)
+        Tooltip(self._ref_btn, "Command reference: 100+ commands (EN/DE)")
+
+        self._slice_btn = tk.Button(
+            btn_row, text="SLICE", font=self._font_status,
+            bg=BG_FIELD, fg=FG_DIM, activebackground=ORANGE,
+            activeforeground="white", relief=tk.FLAT,
+            cursor="hand2", command=self._send_to_slicer,
+            padx=6, pady=3,
+        )
+        self._slice_btn.pack(side=tk.RIGHT, expand=True, fill=tk.X)
+        Tooltip(self._slice_btn, "Export active object and open in PrusaSlicer")
 
         # Separator (left of middle)
         sep2 = tk.Frame(main, bg=BORDER, width=1)
@@ -253,10 +268,12 @@ class PrintVoiceApp:
         self._dot_blender = self._add_status_row(right, "Blender")
         self._dot_ollama = self._add_status_row(right, "Ollama")
         self._dot_mic = self._add_status_row(right, "Mic")
+        self._dot_slicer = self._add_status_row(right, "Slicer")
 
         self._tip_blender = Tooltip(self._dot_blender, "Blender: checking...")
         self._tip_ollama = Tooltip(self._dot_ollama, "Ollama: checking...")
         self._tip_mic = Tooltip(self._dot_mic, "Mic: checking...")
+        self._tip_slicer = Tooltip(self._dot_slicer, "PrusaSlicer: checking...")
 
         # VRAM label
         self._vram_var = tk.StringVar(value="VRAM: --")
@@ -397,6 +414,51 @@ ts.snap_elements = {snap_set}
                             f"Restore failed: {err}", FG_ERROR)
 
     # --- Actions ---
+
+    def _send_to_slicer(self):
+        """Export active object as STL and open in PrusaSlicer."""
+        if not self._slicer_path:
+            self._set_result("PrusaSlicer not found — install it and restart", FG_ERROR)
+            return
+        if self._processing:
+            return
+        # Export active object via Blender, then open in slicer
+        export_code = (
+            'bpy.ops.object.select_all(action="DESELECT")\n'
+            'obj = bpy.context.active_object\n'
+            'if obj and obj.type == "MESH":\n'
+            '    obj.select_set(True)\n'
+            '    filepath = "/tmp/" + obj.name + ".stl"\n'
+            '    bpy.ops.wm.stl_export(filepath=filepath, export_selected_objects=True, '
+            'global_scale=1000.0, ascii_format=False, apply_modifiers=True)\n'
+            '    result = filepath\n'
+            'else:\n'
+            '    result = "NO_ACTIVE_MESH"\n'
+        )
+        self._set_result("Exporting to slicer...", YELLOW)
+        threading.Thread(target=self._run_slicer_export, args=(export_code,),
+                         daemon=True).start()
+
+    def _run_slicer_export(self, export_code):
+        """Background: export STL then open PrusaSlicer."""
+        try:
+            result = blender_client.execute(export_code)
+            if result["status"] == "ok" and result.get("result", "").startswith("/tmp/"):
+                stl_path = result["result"]
+                subprocess.Popen([self._slicer_path, stl_path],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                self.root.after(0, self._set_result,
+                                f"Sent to PrusaSlicer: {stl_path}", FG_RESULT)
+            elif result.get("result") == "NO_ACTIVE_MESH":
+                self.root.after(0, self._set_result,
+                                "No active mesh object to export", FG_ERROR)
+            else:
+                err = result.get("error", "export failed")[:80]
+                self.root.after(0, self._set_result,
+                                f"Export failed: {err}", FG_ERROR)
+        except Exception as e:
+            self.root.after(0, self._set_result,
+                            f"Slicer error: {str(e)[:80]}", FG_ERROR)
 
     def _open_reference(self):
         """Open the command reference HTML in the default browser."""
@@ -637,6 +699,20 @@ ts.snap_elements = {snap_set}
             self.root.after(0, self._dot_mic.set_error)
             self.root.after(0, self._mic_btn.configure, {"state": tk.DISABLED})
             self.root.after(0, self._tip_mic.update_text, "Mic: no microphone detected")
+
+        # PrusaSlicer
+        from agent.config import find_slicer
+        slicer = find_slicer()
+        if slicer:
+            self._slicer_path = slicer
+            self.root.after(0, self._dot_slicer.set_ok)
+            self.root.after(0, self._tip_slicer.update_text, f"PrusaSlicer: {slicer}")
+            self.root.after(0, self._slice_btn.configure, {"state": tk.NORMAL})
+        else:
+            self._slicer_path = ""
+            self.root.after(0, self._dot_slicer.set_error)
+            self.root.after(0, self._tip_slicer.update_text, "PrusaSlicer: not installed")
+            self.root.after(0, self._slice_btn.configure, {"state": tk.DISABLED})
 
         # VRAM
         try:
