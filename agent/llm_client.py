@@ -6,8 +6,18 @@ import urllib.error
 from pathlib import Path
 
 SYSTEM_PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "system.md"
+from agent.config import load_config
+
 OLLAMA_URL = "http://localhost:11434"
-MODEL = "qwen2.5-coder:14b-instruct"
+_cached_model = None
+
+
+def _get_model() -> str:
+    """Get model name from config (cached after first read)."""
+    global _cached_model
+    if _cached_model is None:
+        _cached_model = load_config().get("model", "qwen2.5-coder:14b-instruct")
+    return _cached_model
 
 
 def _load_system_prompt() -> str:
@@ -17,7 +27,7 @@ def _load_system_prompt() -> str:
 def _ollama_chat(system: str, user_message: str) -> str:
     """Send a chat request to Ollama and return the response text."""
     payload = json.dumps({
-        "model": MODEL,
+        "model": _get_model(),
         "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": user_message},
