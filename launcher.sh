@@ -22,6 +22,7 @@ if [ -d "$PROJECT_DIR/venv" ]; then
 fi
 
 # --- Check python3 exists ---
+# (must come after venv activation so venv's python3 is found)
 if ! command -v python3 &>/dev/null; then
     if command -v notify-send &>/dev/null; then
         notify-send "3DPrintVoice" "Python 3 is not installed. Please install python3." --icon=dialog-error
@@ -35,6 +36,16 @@ _gui_error() {
     python3 "$PROJECT_DIR/agent/gui_error.py" "$1" 2>/dev/null \
         || echo "[3DPrintVoice] ERROR: $1"
 }
+
+# --- Verify Python dependencies ---
+if ! python3 -c "import faster_whisper" &>/dev/null 2>&1; then
+    if [ -d "$PROJECT_DIR/venv" ]; then
+        _gui_error "Python dependencies missing from venv. Run:\n$PROJECT_DIR/venv/bin/pip install -r $PROJECT_DIR/requirements.txt"
+    else
+        _gui_error "Python dependencies not installed. Run:\npip install -r $PROJECT_DIR/requirements.txt"
+    fi
+    exit 1
+fi
 
 # --- First-run check: launch wizard BEFORE starting any services ---
 CONFIG_FILE="$HOME/.config/3d-print-voice/config.json"
@@ -132,6 +143,11 @@ if ! ollama list 2>/dev/null | grep -q "$MODEL"; then
     echo "[3DPrintVoice] Model not found. Pulling $MODEL..."
     echo "  (This may download several GB on first run.)"
     ollama pull "$MODEL"
+    # Verify model was actually downloaded
+    if ! ollama list 2>/dev/null | grep -q "$MODEL"; then
+        _gui_error "Model $MODEL failed to download.\n\nCheck internet connection and disk space."
+        exit 1
+    fi
 fi
 
 # --- Warm up the model ---
