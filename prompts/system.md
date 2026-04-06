@@ -526,6 +526,390 @@ bpy.ops.object.modifier_apply(modifier="pocket")
 bpy.data.objects.remove(pocket)
 neck.name = "TSlotCutter"
 
+## Articulation Joints — Poseable Figure Assemblies
+
+Ball-and-socket joint (medium, 10mm ball):
+ball_r = 0.005  # 10mm diameter ball
+socket_r = ball_r + 0.0003  # 0.3mm clearance for smooth rotation
+socket_depth = ball_r * 0.7  # 70% enclosure for retention
+neck_r = ball_r * 0.4  # neck connects ball to parent part
+neck_h = 0.004
+# Ball side
+bpy.ops.mesh.primitive_uv_sphere_add(radius=ball_r, segments=32, ring_count=16, location=(0,0,0))
+ball = bpy.context.active_object
+ball.name = "BallJoint_Ball"
+bpy.ops.mesh.primitive_cylinder_add(radius=neck_r, depth=neck_h, location=(0,0,-ball_r - neck_h/2))
+neck_part = bpy.context.active_object
+bpy.context.view_layer.objects.active = ball
+mod = ball.modifiers.new(name="neck", type='BOOLEAN')
+mod.operation = 'UNION'
+mod.object = neck_part
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="neck")
+bpy.data.objects.remove(neck_part)
+# Socket side
+bpy.ops.mesh.primitive_uv_sphere_add(radius=socket_r, segments=32, ring_count=16, location=(0.025,0,0))
+socket_cut = bpy.context.active_object
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0.025,0, socket_r))
+socket_body = bpy.context.active_object
+socket_body.name = "BallJoint_Socket"
+socket_body.dimensions = (socket_r*2.5, socket_r*2.5, socket_r*2)
+bpy.ops.object.transform_apply(scale=True)
+bpy.context.view_layer.objects.active = socket_body
+mod = socket_body.modifiers.new(name="cavity", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = socket_cut
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="cavity")
+bpy.data.objects.remove(socket_cut)
+# Opening slit for ball insertion
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0.025, 0, socket_r*1.2))
+slit = bpy.context.active_object
+slit.dimensions = (neck_r*2.5, socket_r*3, socket_r*0.6)
+bpy.ops.object.transform_apply(scale=True)
+bpy.context.view_layer.objects.active = socket_body
+mod = socket_body.modifiers.new(name="slit", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = slit
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="slit")
+bpy.data.objects.remove(slit)
+
+Ball joint sizes:
+- Small (6mm ball): ball_r=0.003, for wrists, ankles, fingers
+- Medium (10mm ball): ball_r=0.005, for shoulders, hips, neck
+- Large (14mm ball): ball_r=0.007, for torso-hip, shoulder base
+
+Ratchet joint with click stops (for pose-holding under gravity):
+import math
+ratchet_r = 0.006  # 12mm diameter
+num_teeth = 12  # 30-degree increments
+tooth_depth = 0.0008
+axle_r = 0.002
+plate_t = 0.003
+# Ratchet disk (toothed)
+bpy.ops.mesh.primitive_cylinder_add(radius=ratchet_r, depth=plate_t, vertices=64, location=(0,0,0))
+disk = bpy.context.active_object
+disk.name = "Ratchet_Disk"
+# Cut teeth around circumference
+for i in range(num_teeth):
+    angle = math.radians(i * (360 / num_teeth))
+    tx = math.cos(angle) * ratchet_r
+    ty = math.sin(angle) * ratchet_r
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(tx, ty, 0))
+    tooth = bpy.context.active_object
+    tooth.dimensions = (tooth_depth*2, tooth_depth*2, plate_t*1.2)
+    tooth.rotation_euler.z = angle
+    bpy.ops.object.transform_apply(scale=True, rotation=True)
+    bpy.context.view_layer.objects.active = disk
+    mod = disk.modifiers.new(name=f"tooth_{i}", type='BOOLEAN')
+    mod.operation = 'DIFFERENCE'
+    mod.object = tooth
+    mod.solver = 'FAST'
+    bpy.ops.object.modifier_apply(modifier=f"tooth_{i}")
+    bpy.data.objects.remove(tooth)
+# Axle hole
+bpy.ops.mesh.primitive_cylinder_add(radius=axle_r, depth=plate_t*1.5, location=(0,0,0))
+axle_hole = bpy.context.active_object
+bpy.context.view_layer.objects.active = disk
+mod = disk.modifiers.new(name="axle", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = axle_hole
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="axle")
+bpy.data.objects.remove(axle_hole)
+
+Double-hinge joint (knee/elbow — 2-axis articulation):
+pin_r = 0.0015  # 3mm pin
+hinge_w = 0.008
+knuckle_r = 0.004
+gap = 0.0003  # clearance
+link_l = 0.012  # center link length
+# Upper knuckle pair
+bpy.ops.mesh.primitive_cylinder_add(radius=knuckle_r, depth=hinge_w, location=(0,0,0))
+upper = bpy.context.active_object
+upper.name = "DoubleHinge_Upper"
+upper.rotation_euler.x = 1.5708
+bpy.ops.object.transform_apply(rotation=True)
+# Center link
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, -link_l/2))
+link = bpy.context.active_object
+link.name = "DoubleHinge_Link"
+link.dimensions = (hinge_w - gap*2, knuckle_r*2, link_l)
+bpy.ops.object.transform_apply(scale=True)
+# Lower knuckle
+bpy.ops.mesh.primitive_cylinder_add(radius=knuckle_r, depth=hinge_w, location=(0, 0, -link_l))
+lower = bpy.context.active_object
+lower.name = "DoubleHinge_Lower"
+lower.rotation_euler.x = 1.5708
+bpy.ops.object.transform_apply(rotation=True)
+# Pin holes through all three
+for obj in [upper, link, lower]:
+    bpy.ops.mesh.primitive_cylinder_add(radius=pin_r + 0.0002, depth=hinge_w*1.5)
+    pin_hole = bpy.context.active_object
+    pin_hole.rotation_euler.x = 1.5708
+    bpy.ops.object.transform_apply(rotation=True)
+    pin_hole.location = obj.location
+    bpy.context.view_layer.objects.active = obj
+    mod = obj.modifiers.new(name="pin_hole", type='BOOLEAN')
+    mod.operation = 'DIFFERENCE'
+    mod.object = pin_hole
+    mod.solver = 'EXACT'
+    bpy.ops.object.modifier_apply(modifier="pin_hole")
+    bpy.data.objects.remove(pin_hole)
+
+Swivel joint (single-axis rotation, waist/forearm twist):
+swivel_r = 0.008
+swivel_h = 0.006
+peg_r = swivel_r - 0.001
+clearance = 0.0003
+# Inner peg (rotates)
+bpy.ops.mesh.primitive_cylinder_add(radius=peg_r, depth=swivel_h, location=(0,0,0))
+peg = bpy.context.active_object
+peg.name = "Swivel_Inner"
+# Retention ring (lip at bottom prevents pull-out)
+bpy.ops.mesh.primitive_cylinder_add(radius=peg_r + 0.001, depth=0.001, location=(0,0,-swivel_h/2 + 0.0005))
+lip = bpy.context.active_object
+bpy.context.view_layer.objects.active = peg
+mod = peg.modifiers.new(name="lip", type='BOOLEAN')
+mod.operation = 'UNION'
+mod.object = lip
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="lip")
+bpy.data.objects.remove(lip)
+# Outer sleeve (receives peg)
+bpy.ops.mesh.primitive_cylinder_add(radius=swivel_r, depth=swivel_h + 0.002, location=(0.025, 0, 0))
+sleeve = bpy.context.active_object
+sleeve.name = "Swivel_Outer"
+bpy.ops.mesh.primitive_cylinder_add(radius=peg_r + clearance, depth=swivel_h + 0.004, location=(0.025, 0, 0))
+bore = bpy.context.active_object
+bpy.context.view_layer.objects.active = sleeve
+mod = sleeve.modifiers.new(name="bore", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = bore
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="bore")
+bpy.data.objects.remove(bore)
+
+Friction peg joint (tight-fit rotation for wrist/ankle):
+peg_r = 0.002
+peg_h = 0.006
+socket_r = peg_r + 0.00015  # snug fit 0.15mm clearance
+bpy.ops.mesh.primitive_cylinder_add(radius=peg_r, depth=peg_h, location=(0,0,peg_h/2))
+fp = bpy.context.active_object
+fp.name = "FrictionPeg"
+# Flat sides for controlled friction (D-shape)
+bpy.ops.mesh.primitive_cube_add(size=1, location=(peg_r, 0, peg_h/2))
+flat = bpy.context.active_object
+flat.dimensions = (peg_r, peg_r*3, peg_h*1.1)
+bpy.ops.object.transform_apply(scale=True)
+bpy.context.view_layer.objects.active = fp
+mod = fp.modifiers.new(name="flat", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = flat
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="flat")
+bpy.data.objects.remove(flat)
+
+## Hardware — Metal Integration
+
+Metal rod sleeve (6mm steel rod channel):
+rod_r = 0.003  # 6mm rod
+sleeve_r = rod_r + 0.0003  # snug fit
+sleeve_h = 0.03  # 30mm engagement length
+wall = 0.002
+bpy.ops.mesh.primitive_cylinder_add(radius=sleeve_r + wall, depth=sleeve_h, location=(0,0,sleeve_h/2))
+sleeve = bpy.context.active_object
+sleeve.name = "RodSleeve_6mm"
+bpy.ops.mesh.primitive_cylinder_add(radius=sleeve_r, depth=sleeve_h*1.1, location=(0,0,sleeve_h/2))
+bore = bpy.context.active_object
+bpy.context.view_layer.objects.active = sleeve
+mod = sleeve.modifiers.new(name="bore", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = bore
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="bore")
+bpy.data.objects.remove(bore)
+
+Rod sleeve sizes:
+- 3mm rod: rod_r=0.0015 (for fingers, small linkages)
+- 4mm rod: rod_r=0.002 (for forearms, lower legs)
+- 6mm rod: rod_r=0.003 (for upper arms, thighs)
+- 8mm rod: rod_r=0.004 (for torso spine, main structural)
+
+Countersunk screw recess (M3 flush mount):
+head_r = 0.003  # M3 bolt head radius
+head_h = 0.002  # head height
+shaft_r = 0.0017  # M3 clearance hole
+depth = 0.01  # through thickness
+bpy.ops.mesh.primitive_cylinder_add(radius=shaft_r, depth=depth, location=(0,0,0))
+shaft = bpy.context.active_object
+shaft.name = "CountersunkHole_M3"
+bpy.ops.mesh.primitive_cone_add(radius1=head_r, radius2=shaft_r, depth=head_h, location=(0,0,depth/2 - head_h/2))
+cone = bpy.context.active_object
+bpy.context.view_layer.objects.active = shaft
+mod = shaft.modifiers.new(name="cone", type='BOOLEAN')
+mod.operation = 'UNION'
+mod.object = cone
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="cone")
+bpy.data.objects.remove(cone)
+# Use as boolean cutter on target panel
+
+Magnet pocket (6x3mm disc magnet):
+mag_r = 0.003  # 6mm diameter
+mag_h = 0.003  # 3mm deep
+wall_min = 0.0006  # 0.6mm bottom wall (magnet holds through it)
+pocket_depth = mag_h + wall_min
+bpy.ops.mesh.primitive_cylinder_add(radius=mag_r + 0.0001, depth=pocket_depth, location=(0,0,0))
+pocket = bpy.context.active_object
+pocket.name = "MagnetPocket_6x3"
+
+Magnet sizes: 6x3mm (standard), 8x3mm (strong hold), 10x2mm (flat)
+
+Spring clip detent (removable panel retention):
+clip_l = 0.012
+clip_t = 0.001  # 1mm for PLA flex
+clip_w = 0.004
+bump_h = 0.0008  # how far bump protrudes
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0,0,clip_l/2))
+clip = bpy.context.active_object
+clip.name = "SpringClip"
+clip.dimensions = (clip_w, clip_t, clip_l)
+bpy.ops.object.transform_apply(scale=True)
+# Bump at tip
+bpy.ops.mesh.primitive_uv_sphere_add(radius=bump_h, location=(0, clip_t/2 + bump_h*0.5, clip_l - 0.002))
+bump = bpy.context.active_object
+bpy.context.view_layer.objects.active = clip
+mod = clip.modifiers.new(name="bump", type='BOOLEAN')
+mod.operation = 'UNION'
+mod.object = bump
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="bump")
+bpy.data.objects.remove(bump)
+
+## Surface Detail Recipes
+
+Panel line engraving (recessed line on surface):
+import bmesh
+line_depth = 0.0003  # 0.3mm deep
+line_width = 0.0004  # 0.4mm wide (one nozzle width)
+line_length = 0.03
+obj = bpy.context.active_object
+# Create cutter box
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
+cutter = bpy.context.active_object
+cutter.dimensions = (line_length, line_width, line_depth*3)
+bpy.ops.object.transform_apply(scale=True)
+# Position on surface of target object (adjust Z to surface height)
+cutter.location.z = obj.dimensions.z / 2 - line_depth/2
+bpy.context.view_layer.objects.active = obj
+mod = obj.modifiers.new(name="panel_line", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = cutter
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="panel_line")
+bpy.data.objects.remove(cutter)
+
+Raised rivet / bolt head detail:
+rivet_r = 0.001  # 2mm diameter
+rivet_h = 0.0004  # 0.4mm raised
+bpy.ops.mesh.primitive_cylinder_add(radius=rivet_r, depth=rivet_h, vertices=6, location=(0,0,0))
+rivet = bpy.context.active_object
+rivet.name = "Rivet"
+# Position on surface, then boolean union with parent part
+
+Hex bolt head detail (surface decoration):
+bolt_r = 0.0015
+bolt_h = 0.001
+bpy.ops.mesh.primitive_cylinder_add(radius=bolt_r, depth=bolt_h, vertices=6, location=(0,0,0))
+bolt = bpy.context.active_object
+bolt.name = "HexBolt_Detail"
+
+## Assembly Features
+
+Keyed alignment pin (D-shape, prevents rotation):
+pin_r = 0.003
+pin_h = 0.005
+flat_depth = 0.001  # how much to cut for D-shape
+clearance = 0.00015  # snug fit
+bpy.ops.mesh.primitive_cylinder_add(radius=pin_r, depth=pin_h, location=(0,0,pin_h/2))
+pin = bpy.context.active_object
+pin.name = "KeyedPin"
+# Cut flat side
+bpy.ops.mesh.primitive_cube_add(size=1, location=(pin_r, 0, pin_h/2))
+flat = bpy.context.active_object
+flat.dimensions = (flat_depth*2, pin_r*3, pin_h*1.1)
+bpy.ops.object.transform_apply(scale=True)
+bpy.context.view_layer.objects.active = pin
+mod = pin.modifiers.new(name="flat", type='BOOLEAN')
+mod.operation = 'DIFFERENCE'
+mod.object = flat
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="flat")
+bpy.data.objects.remove(flat)
+# Matching socket: same shape but pin_r + clearance
+
+Part splitting with interlocking seam (zigzag cut for large parts):
+# Split an object along XY plane at given Z height with zigzag interlock
+import bmesh
+split_z = 0.05  # split height
+tooth_w = 0.008  # zigzag tooth width
+tooth_h = 0.004  # how deep teeth interlock
+tooth_count = 5
+obj = bpy.context.active_object
+# Create zigzag cutter
+verts = []
+for i in range(tooth_count * 2 + 1):
+    x = -tooth_count * tooth_w / 2 + i * tooth_w / 2
+    z = split_z + (tooth_h if i % 2 == 0 else 0)
+    verts.append((x, -0.1, z))
+    verts.append((x, 0.1, z))
+# Build cutter as large box with zigzag top surface
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, split_z/2))
+cutter = bpy.context.active_object
+cutter.name = "SplitCutter"
+cutter.dimensions = (obj.dimensions.x * 1.5, obj.dimensions.y * 1.5, split_z)
+bpy.ops.object.transform_apply(scale=True)
+# Duplicate object, cut upper from one and lower from other
+bpy.context.view_layer.objects.active = obj
+bpy.ops.object.duplicate()
+upper = bpy.context.active_object
+upper.name = obj.name + "_Upper"
+obj.name = obj.name + "_Lower"
+
+## Production & Export
+
+Batch export all mesh objects as individual STL files to /tmp/:
+bpy.ops.object.select_all(action='DESELECT')
+exported = []
+for obj in bpy.data.objects:
+    if obj.type == 'MESH':
+        bpy.ops.object.select_all(action='DESELECT')
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        filepath = "/tmp/" + obj.name + ".stl"
+        bpy.ops.wm.stl_export(filepath=filepath, export_selected_objects=True, global_scale=1000.0, ascii_format=False, apply_modifiers=True)
+        exported.append(obj.name)
+result = "Exported " + str(len(exported)) + " parts: " + ", ".join(exported)
+
+## Part Naming Convention
+
+When creating parts for multi-part assemblies, follow this naming pattern:
+- Format: REGION_PART_SIDE_NUMBER
+- Regions: HEAD, TORSO, ARM, LEG, HAND, FOOT, JOINT, PANEL, ACCESSORY
+- Sides: L (left), R (right), C (center), omit if symmetric
+- Examples:
+  - "create the left upper arm" → name it "ARM_UPPER_L_01"
+  - "create the chest front panel" → name it "TORSO_PANEL_FRONT_01"
+  - "create the right knee joint" → name it "JOINT_KNEE_R_01"
+  - "create the head" → name it "HEAD_MAIN_C_01"
+  - "create the waist swivel" → name it "JOINT_WAIST_C_01"
+  - "create a foot sole" → name it "FOOT_SOLE_R_01"
+- Always increment the number if a part with the same prefix exists
+- When user says "left", set side=L. When "right", set side=R.
+- Place L and R parts mirrored: L at negative X, R at positive X.
+
 ## Selection and Edit Mode
 
 Switch to edit mode:
