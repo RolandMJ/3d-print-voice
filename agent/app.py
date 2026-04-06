@@ -36,6 +36,38 @@ LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 BAR_HEIGHT = 100
 
 
+class Tooltip:
+    """Simple hover tooltip for tkinter widgets."""
+
+    def __init__(self, widget, text=""):
+        self._widget = widget
+        self._text = text
+        self._tip = None
+        widget.bind("<Enter>", self._show)
+        widget.bind("<Leave>", self._hide)
+
+    def update_text(self, text):
+        self._text = text
+
+    def _show(self, event=None):
+        if not self._text:
+            return
+        x = self._widget.winfo_rootx() + 20
+        y = self._widget.winfo_rooty() + self._widget.winfo_height() + 4
+        self._tip = tk.Toplevel(self._widget)
+        self._tip.wm_overrideredirect(True)
+        self._tip.wm_geometry(f"+{x}+{y}")
+        lbl = tk.Label(self._tip, text=self._text, bg="#FFFFDD", fg="#333",
+                       relief=tk.SOLID, borderwidth=1,
+                       font=("sans-serif", 9), padx=6, pady=3)
+        lbl.pack()
+
+    def _hide(self, event=None):
+        if self._tip:
+            self._tip.destroy()
+            self._tip = None
+
+
 class StatusDot(tk.Canvas):
     """Small colored dot indicator."""
 
@@ -138,6 +170,7 @@ class PrintVoiceApp:
             padx=10, pady=6, width=10,
         )
         self._print_btn.pack(expand=True)
+        Tooltip(self._print_btn, "Toggle 3D print view: metric units, mm, snap to grid")
 
         # Separator (left of middle)
         sep2 = tk.Frame(main, bg=BORDER, width=1)
@@ -198,6 +231,10 @@ class PrintVoiceApp:
         self._dot_blender = self._add_status_row(right, "Blender")
         self._dot_ollama = self._add_status_row(right, "Ollama")
         self._dot_mic = self._add_status_row(right, "Mic")
+
+        self._tip_blender = Tooltip(self._dot_blender, "Blender: checking...")
+        self._tip_ollama = Tooltip(self._dot_ollama, "Ollama: checking...")
+        self._tip_mic = Tooltip(self._dot_mic, "Mic: checking...")
 
         # VRAM label
         self._vram_var = tk.StringVar(value="VRAM: --")
@@ -502,8 +539,10 @@ ts.snap_elements = {snap_set}
         # Blender
         if blender_client.health_check():
             self.root.after(0, self._dot_blender.set_ok)
+            self.root.after(0, self._tip_blender.update_text, "Blender: connected (localhost:6789)")
         else:
             self.root.after(0, self._dot_blender.set_error)
+            self.root.after(0, self._tip_blender.update_text, "Blender: not responding")
 
         # Ollama
         try:
@@ -511,8 +550,10 @@ ts.snap_elements = {snap_set}
             req = urllib.request.Request("http://localhost:11434/api/tags")
             with urllib.request.urlopen(req, timeout=2):
                 self.root.after(0, self._dot_ollama.set_ok)
+                self.root.after(0, self._tip_ollama.update_text, "Ollama: running (localhost:11434)")
         except Exception:
             self.root.after(0, self._dot_ollama.set_error)
+            self.root.after(0, self._tip_ollama.update_text, "Ollama: not running")
 
         # Mic
         try:
@@ -521,11 +562,14 @@ ts.snap_elements = {snap_set}
             if self._whisper_loaded:
                 self.root.after(0, self._dot_mic.set_ok)
                 self.root.after(0, self._mic_btn.configure, {"state": tk.NORMAL})
+                self.root.after(0, self._tip_mic.update_text, "Mic: ready (whisper loaded)")
             else:
                 self.root.after(0, self._dot_mic.set_warn)
+                self.root.after(0, self._tip_mic.update_text, "Mic: loading whisper model...")
         except Exception:
             self.root.after(0, self._dot_mic.set_error)
             self.root.after(0, self._mic_btn.configure, {"state": tk.DISABLED})
+            self.root.after(0, self._tip_mic.update_text, "Mic: no microphone detected")
 
         # VRAM
         try:
