@@ -87,12 +87,14 @@ def _process_queue():
 
 
 def _execute_bpy(code):
-    """Execute bpy code string and return a result dict."""
+    """Execute bpy code string and return a result dict.
+    If the executed code sets a 'result' variable, its value is returned."""
     exec_globals = {"bpy": bpy, "__builtins__": __builtins__}
     try:
         bpy.ops.ed.undo_push(message="AI Bridge command")
         exec(code, exec_globals)
-        return {"status": "ok", "result": "executed"}
+        result_val = exec_globals.get("result", "executed")
+        return {"status": "ok", "result": result_val}
     except Exception:
         return {"status": "error", "error": traceback.format_exc()}
 

@@ -81,6 +81,8 @@ class BlenderAIApp:
         # State
         self._processing = False
         self._cmd_count = 0
+        self._print_mode = False
+        self._saved_blender_settings = None
 
         # Voice
         self._recorder = VoiceRecorder(on_auto_stop=self._on_voice_result)
@@ -116,9 +118,26 @@ class BlenderAIApp:
         right.pack(side=tk.RIGHT, fill=tk.Y)
         right.pack_propagate(False)
 
-        # Separator
+        # Separator (right of middle)
         sep = tk.Frame(main, bg=BORDER, width=1)
         sep.pack(side=tk.RIGHT, fill=tk.Y, padx=4)
+
+        # Middle section — 3D Print toggle
+        mid = tk.Frame(main, bg=BG, padx=8)
+        mid.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self._print_btn = tk.Button(
+            mid, text="3D PRINT\n   OFF", font=self._font_status,
+            bg=BG_FIELD, fg=FG_DIM, activebackground=GREEN,
+            activeforeground="white", relief=tk.FLAT,
+            cursor="hand2", command=self._toggle_print_mode,
+            padx=10, pady=6, width=10,
+        )
+        self._print_btn.pack(expand=True)
+
+        # Separator (left of middle)
+        sep2 = tk.Frame(main, bg=BORDER, width=1)
+        sep2.pack(side=tk.RIGHT, fill=tk.Y, padx=4)
 
         # --- Row 1: Mic + Input + Send ---
         row1 = tk.Frame(left, bg=BG)
@@ -195,6 +214,147 @@ class BlenderAIApp:
         tk.Label(row, text=label, font=self._font_status,
                  bg=BG_STATUS, fg=FG_DIM, anchor="w").pack(side=tk.LEFT)
         return dot
+
+    # --- 3D Print Mode ---
+
+    _BPY_CAPTURE_SETTINGS = """\
+import bpy, json
+s = bpy.context.scene
+area = None
+space = None
+for a in bpy.context.screen.areas:
+    if a.type == 'VIEW_3D':
+        area = a
+        for sp in a.spaces:
+            if sp.type == 'VIEW_3D':
+                space = sp
+                break
+        break
+settings = {
+    "unit_system": s.unit_settings.system,
+    "length_unit": s.unit_settings.length_unit,
+    "scale_length": s.unit_settings.scale_length,
+}
+if space:
+    r3d = space.region_3d if hasattr(space, 'region_3d') else None
+    settings["clip_start"] = space.clip_start
+    settings["clip_end"] = space.clip_end
+ts = s.tool_settings
+settings["snap"] = ts.use_snap
+settings["snap_elements"] = list(ts.snap_elements)
+result = json.dumps(settings)
+"""
+
+    _BPY_APPLY_PRINT_MODE = """\
+import bpy
+s = bpy.context.scene
+s.unit_settings.system = 'METRIC'
+s.unit_settings.length_unit = 'MILLIMETERS'
+s.unit_settings.scale_length = 0.001
+for a in bpy.context.screen.areas:
+    if a.type == 'VIEW_3D':
+        for sp in a.spaces:
+            if sp.type == 'VIEW_3D':
+                sp.clip_start = 0.1
+                sp.clip_end = 100000
+                break
+        break
+ts = s.tool_settings
+ts.use_snap = True
+ts.snap_elements = {'INCREMENT'}
+"""
+
+    def _toggle_print_mode(self):
+        """Toggle between normal and 3D-print-optimized Blender settings."""
+        if self._processing:
+            return
+        if not self._print_mode:
+            threading.Thread(target=self._apply_print_mode, daemon=True).start()
+        else:
+            threading.Thread(target=self._restore_normal_mode, daemon=True).start()
+
+    def _apply_print_mode(self):
+        """Capture current settings, then apply 3D print config."""
+        self.root.after(0, self._set_result, "Capturing Blender settings...", YELLOW)
+        # Capture current settings
+        capture_result = blender_client.execute(self._BPY_CAPTURE_SETTINGS)
+        if capture_result["status"] == "ok":
+            try:
+                import json
+                self._saved_blender_settings = json.loads(
+                    capture_result.get("result", "{}"))
+            except Exception:
+                self._saved_blender_settings = None
+
+        # Apply 3D print settings
+        self.root.after(0, self._set_result, "Applying 3D print settings...", YELLOW)
+        result = blender_client.execute(self._BPY_APPLY_PRINT_MODE)
+        if result["status"] == "ok":
+            self._print_mode = True
+            self.root.after(0, self._print_btn.configure,
+                            {"bg": GREEN, "fg": "white", "text": "3D PRINT\n    ON"})
+            self.root.after(0, self._set_result,
+                            "3D Print mode ON — metric, mm, snap to grid", FG_RESULT)
+        else:
+            err = result.get("error", "unknown")[:60]
+            self.root.after(0, self._set_result,
+                            f"3D Print mode failed: {err}", FG_ERROR)
+
+    def _restore_normal_mode(self):
+        """Restore previously captured Blender settings."""
+        if not self._saved_blender_settings:
+            # No saved settings — just reset to Blender defaults
+            reset_code = """\
+import bpy
+s = bpy.context.scene
+s.unit_settings.system = 'METRIC'
+s.unit_settings.length_unit = 'ADAPTIVE'
+s.unit_settings.scale_length = 1.0
+for a in bpy.context.screen.areas:
+    if a.type == 'VIEW_3D':
+        for sp in a.spaces:
+            if sp.type == 'VIEW_3D':
+                sp.clip_start = 0.1
+                sp.clip_end = 1000
+                break
+        break
+ts = s.tool_settings
+ts.use_snap = False
+"""
+        else:
+            s = self._saved_blender_settings
+            snap_elements = s.get("snap_elements", ["INCREMENT"])
+            snap_set = "{" + ", ".join(f"'{e}'" for e in snap_elements) + "}"
+            reset_code = f"""\
+import bpy
+s = bpy.context.scene
+s.unit_settings.system = '{s.get("unit_system", "METRIC")}'
+s.unit_settings.length_unit = '{s.get("length_unit", "ADAPTIVE")}'
+s.unit_settings.scale_length = {s.get("scale_length", 1.0)}
+for a in bpy.context.screen.areas:
+    if a.type == 'VIEW_3D':
+        for sp in a.spaces:
+            if sp.type == 'VIEW_3D':
+                sp.clip_start = {s.get("clip_start", 0.1)}
+                sp.clip_end = {s.get("clip_end", 1000)}
+                break
+        break
+ts = s.tool_settings
+ts.use_snap = {s.get("snap", False)}
+ts.snap_elements = {snap_set}
+"""
+        self.root.after(0, self._set_result, "Restoring original settings...", YELLOW)
+        result = blender_client.execute(reset_code)
+        if result["status"] == "ok":
+            self._print_mode = False
+            self.root.after(0, self._print_btn.configure,
+                            {"bg": BG_FIELD, "fg": FG_DIM, "text": "3D PRINT\n   OFF"})
+            self.root.after(0, self._set_result,
+                            "Original Blender settings restored", FG_RESULT)
+        else:
+            err = result.get("error", "unknown")[:60]
+            self.root.after(0, self._set_result,
+                            f"Restore failed: {err}", FG_ERROR)
 
     # --- Actions ---
 
