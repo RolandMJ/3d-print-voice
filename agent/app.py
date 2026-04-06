@@ -658,6 +658,14 @@ ts.snap_elements = {snap_set}
         if "archive" in lower and "draft" in lower:
             return self._do_archive()
 
+        # Assembly testing — load full assembly
+        if "load" in lower and ("full assembly" in lower or "all parts" in lower):
+            return self._do_load_assembly()
+
+        # Assembly testing — check balance / center of gravity
+        if "balance" in lower or "center of gravity" in lower or "cog" in lower:
+            return self._do_check_balance()
+
         return False  # Not a special command — send to LLM
 
     def _do_import_part(self, part_ref):
@@ -800,6 +808,105 @@ ts.snap_elements = {snap_set}
         except Exception as e:
             self.root.after(0, self._set_result,
                 f"Reopen error: {str(e)[:80]}", FG_ERROR)
+        return True
+
+    def _do_load_assembly(self):
+        """Import ALL parts from VPS sync folder into Blender scene."""
+        try:
+            from agent.design_sync import pull_designs, LOCAL_ACTIVE
+            self.root.after(0, self._set_result, "Pulling all parts from VPS...", YELLOW)
+            pull_designs()
+            if not LOCAL_ACTIVE.exists():
+                self.root.after(0, self._set_result, "No designs synced yet — push from FreeCAD first", FG_ERROR)
+                return True
+
+            stl_files = sorted(LOCAL_ACTIVE.glob("*.stl"))
+            if not stl_files:
+                self.root.after(0, self._set_result, "No STL files in sync folder", FG_ERROR)
+                return True
+
+            # Find latest version per part (group by REGION_PART_SIDE prefix)
+            latest = {}
+            for f in stl_files:
+                # Parse: REGION_PART_SIDE_STATUS_vNNN_DATE.stl
+                parts = f.stem.split("_")
+                if len(parts) >= 3:
+                    key = "_".join(parts[:3])  # REGION_PART_SIDE
+                    latest[key] = f  # sorted ascending, last = latest
+
+            self.root.after(0, self._set_result,
+                f"Importing {len(latest)} parts...", YELLOW)
+
+            # Build import code for all parts
+            import_lines = []
+            for key, filepath in latest.items():
+                import_lines.append(
+                    f'try:\n'
+                    f'    bpy.ops.wm.stl_import(filepath="{filepath}")\n'
+                    f'except AttributeError:\n'
+                    f'    bpy.ops.import_mesh.stl(filepath="{filepath}")\n'
+                    f'obj = bpy.context.active_object\n'
+                    f'if obj:\n'
+                    f'    obj.name = "{key}"\n'
+                )
+            import_code = "\n".join(import_lines)
+            import_code += f'\nresult = "Imported {len(latest)} parts"\n'
+
+            result = blender_client.execute(import_code)
+            if result["status"] == "ok":
+                self.root.after(0, self._set_result,
+                    f"Loaded {len(latest)} parts into scene", FG_RESULT)
+                self._update_scene_context()
+            else:
+                err = result.get("error", "")[:100]
+                self.root.after(0, self._set_result,
+                    f"Assembly load failed: {err}", FG_ERROR)
+        except Exception as e:
+            self.root.after(0, self._set_result,
+                f"Assembly load error: {str(e)[:80]}", FG_ERROR)
+        return True
+
+    def _do_check_balance(self):
+        """Calculate center of gravity and check stability."""
+        balance_code = (
+            'import mathutils\n'
+            'total_volume = 0\n'
+            'weighted_center = mathutils.Vector((0, 0, 0))\n'
+            'part_count = 0\n'
+            'for obj in bpy.data.objects:\n'
+            '    if obj.type != "MESH":\n'
+            '        continue\n'
+            '    d = obj.dimensions\n'
+            '    vol = d.x * d.y * d.z\n'
+            '    center = obj.location\n'
+            '    weighted_center += center * vol\n'
+            '    total_volume += vol\n'
+            '    part_count += 1\n'
+            'if total_volume > 0:\n'
+            '    cog = weighted_center / total_volume\n'
+            '    cog_mm = [round(cog.x * 1000, 1), round(cog.y * 1000, 1), round(cog.z * 1000, 1)]\n'
+            '    feet = [o for o in bpy.data.objects if "FOOT" in o.name]\n'
+            '    if feet:\n'
+            '        foot_xs = [f.location.x for f in feet]\n'
+            '        foot_ys = [f.location.y for f in feet]\n'
+            '        stable = (min(foot_xs) <= cog.x <= max(foot_xs)) and (min(foot_ys) <= cog.y <= max(foot_ys))\n'
+            '        status = "STABLE" if stable else "UNSTABLE — needs base or counterweight"\n'
+            '    else:\n'
+            '        status = "No FOOT parts found"\n'
+            '    result = str(part_count) + " parts. CoG: " + str(cog_mm) + "mm. " + status\n'
+            'else:\n'
+            '    result = "No mesh objects in scene"\n'
+        )
+        self.root.after(0, self._set_result, "Calculating balance...", YELLOW)
+        try:
+            result = blender_client.execute(balance_code)
+            if result["status"] == "ok":
+                self.root.after(0, self._set_result, result.get("result", ""), FG_RESULT)
+            else:
+                err = result.get("error", "")[:100]
+                self.root.after(0, self._set_result, f"Balance check failed: {err}", FG_ERROR)
+        except Exception as e:
+            self.root.after(0, self._set_result, f"Error: {str(e)[:80]}", FG_ERROR)
         return True
 
     def _do_archive(self):

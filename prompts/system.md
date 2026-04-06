@@ -1363,6 +1363,160 @@ BUILT-IN COMMANDS (handled by the control bar, NOT by bpy code):
 These commands are intercepted BEFORE reaching the LLM. Do NOT generate
 bpy code for them — the control bar handles the full workflow.
 
+## Assembly Testing
+
+Interference check (detect overlapping geometry between two parts):
+obj_a = bpy.data.objects['PART_A']
+obj_b = bpy.data.objects['PART_B']
+# Duplicate A for non-destructive test
+bpy.ops.object.select_all(action='DESELECT')
+obj_a.select_set(True)
+bpy.context.view_layer.objects.active = obj_a
+bpy.ops.object.duplicate()
+test = bpy.context.active_object
+test.name = "INTERFERENCE_TEST"
+# Boolean intersect with B — result shows overlapping volume
+mod = test.modifiers.new(name="interference", type='BOOLEAN')
+mod.operation = 'INTERSECT'
+mod.object = obj_b
+mod.solver = 'EXACT'
+bpy.ops.object.modifier_apply(modifier="interference")
+# Check if result has any geometry
+has_interference = len(test.data.vertices) > 0
+if has_interference:
+    # Color it red for visibility
+    mat = bpy.data.materials.new(name="InterferenceRed")
+    mat.diffuse_color = (1, 0, 0, 0.5)
+    test.data.materials.append(mat)
+    result = "INTERFERENCE FOUND: " + str(len(test.data.vertices)) + " vertices overlap"
+else:
+    bpy.data.objects.remove(test)
+    result = "No interference between " + obj_a.name + " and " + obj_b.name
+
+Cross-section view at a given height (bisect assembly):
+import bmesh
+cut_height = 0.5  # 500mm in BU — adjust as needed
+for obj in bpy.data.objects:
+    if obj.type != 'MESH':
+        continue
+    # Only cut objects that span the cut height
+    if obj.location.z - obj.dimensions.z/2 > cut_height:
+        continue
+    if obj.location.z + obj.dimensions.z/2 < cut_height:
+        continue
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.from_edit_mesh(obj.data)
+    # Bisect — keep bottom half visible, hide top
+    bmesh.ops.bisect_plane(bm,
+        geom=bm.verts[:] + bm.edges[:] + bm.faces[:],
+        plane_co=(0, 0, cut_height),
+        plane_no=(0, 0, 1),
+        clear_outer=True)
+    bmesh.update_edit_mesh(obj.data)
+    bpy.ops.object.mode_set(mode='OBJECT')
+result = "Cross-section at " + str(round(cut_height * 1000)) + "mm"
+
+When user says "cross-section": this is DESTRUCTIVE — it modifies geometry.
+Always suggest the user save/duplicate first. Use undo (Ctrl+Z) to restore.
+
+Joint clearance measurement between two mating surfaces:
+import bmesh
+obj_a = bpy.data.objects['BALL_JOINT']
+obj_b = bpy.data.objects['SOCKET']
+# Get closest point between the two meshes
+min_dist = float('inf')
+bm_a = bmesh.new()
+bm_a.from_mesh(obj_a.data)
+bm_a.transform(obj_a.matrix_world)
+bm_b = bmesh.new()
+bm_b.from_mesh(obj_b.data)
+bm_b.transform(obj_b.matrix_world)
+# Sample vertices from A, find closest on B
+for v_a in bm_a.verts:
+    for v_b in bm_b.verts:
+        d = (v_a.co - v_b.co).length
+        if d < min_dist:
+            min_dist = d
+bm_a.free()
+bm_b.free()
+clearance_mm = round(min_dist * 1000, 2)
+result = "Clearance between " + obj_a.name + " and " + obj_b.name + ": " + str(clearance_mm) + "mm"
+
+NOTE: For large meshes, vertex-to-vertex distance is approximate. For precise
+measurement, use fewer vertices or the shrinkwrap approach.
+
+Center of gravity / balance estimation:
+import mathutils
+total_volume = 0
+weighted_center = mathutils.Vector((0, 0, 0))
+for obj in bpy.data.objects:
+    if obj.type != 'MESH':
+        continue
+    # Approximate volume from bounding box
+    d = obj.dimensions
+    vol = d.x * d.y * d.z
+    center = obj.location
+    weighted_center += center * vol
+    total_volume += vol
+if total_volume > 0:
+    cog = weighted_center / total_volume
+    cog_mm = [round(cog.x * 1000, 1), round(cog.y * 1000, 1), round(cog.z * 1000, 1)]
+    # Check if CoG is within footprint (foot positions)
+    feet = [o for o in bpy.data.objects if 'FOOT' in o.name]
+    if feet:
+        foot_xs = [f.location.x for f in feet]
+        foot_ys = [f.location.y for f in feet]
+        stable = (min(foot_xs) <= cog.x <= max(foot_xs)) and (min(foot_ys) <= cog.y <= max(foot_ys))
+        stability = "STABLE" if stable else "UNSTABLE — CoG outside footprint, needs base or counterweight"
+    else:
+        stability = "No foot objects found — cannot assess stability"
+    result = "Center of gravity: " + str(cog_mm) + "mm. Balance: " + stability
+else:
+    result = "No mesh objects in scene"
+
+Range-of-motion test (rotate joint through range, check collision):
+import math
+joint_obj = bpy.data.objects['JOINT_KNEE_R']
+adjacent = bpy.data.objects['LEG_SHIN_R']  # part that moves with joint
+collider = bpy.data.objects['LEG_THIGH_R']  # part that might collide
+test_axis = 'X'  # rotation axis
+angle_min = 0
+angle_max = 140  # degrees
+steps = 14
+collisions = []
+original_rot = adjacent.rotation_euler.x
+for i in range(steps + 1):
+    angle = math.radians(angle_min + (angle_max - angle_min) * i / steps)
+    if test_axis == 'X':
+        adjacent.rotation_euler.x = angle
+    elif test_axis == 'Y':
+        adjacent.rotation_euler.y = angle
+    else:
+        adjacent.rotation_euler.z = angle
+    bpy.context.view_layer.update()
+    # Quick interference check via bounding box overlap
+    a_min = adjacent.bound_box[0]
+    a_max = adjacent.bound_box[6]
+    c_min = collider.bound_box[0]
+    c_max = collider.bound_box[6]
+    # Transform to world space
+    a_world_min = adjacent.matrix_world @ mathutils.Vector(a_min)
+    a_world_max = adjacent.matrix_world @ mathutils.Vector(a_max)
+    c_world_min = collider.matrix_world @ mathutils.Vector(c_min)
+    c_world_max = collider.matrix_world @ mathutils.Vector(c_max)
+    # AABB overlap test
+    overlap = all(a_world_min[j] <= c_world_max[j] and a_world_max[j] >= c_world_min[j] for j in range(3))
+    if overlap:
+        deg = round(angle_min + (angle_max - angle_min) * i / steps)
+        collisions.append(deg)
+# Restore original rotation
+adjacent.rotation_euler.x = original_rot
+if collisions:
+    result = "COLLISION at angles: " + str(collisions) + " degrees. Max safe angle: " + str(collisions[0] - 10) + " deg"
+else:
+    result = "No collision through full range " + str(angle_min) + "-" + str(angle_max) + " degrees"
+
 ## Context Awareness
 
 Scene state is provided as JSON before each request. It contains:

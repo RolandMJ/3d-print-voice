@@ -484,6 +484,19 @@ body {
     <div class="recipe"><span class="voice en">"send to slicer" or SLICE button / F3</span><span class="voice de">"an Slicer senden" oder SLICE-Taste / F3</span><div class="params en">exports active object → opens PrusaSlicer</div><div class="params de">exportiert aktives Objekt → öffnet PrusaSlicer</div></div>
   </div>
 
+  <!-- Assembly Testing -->
+  <div class="recipe-group rg-hardware">
+    <div class="recipe-group-title">
+      <span class="en">Assembly Testing</span><span class="de">Baugruppen-Test</span>
+    </div>
+    <div class="recipe"><span class="voice en">"load full assembly"</span><span class="voice de">"ganze Baugruppe laden"</span><div class="params en">imports all latest parts from VPS</div><div class="params de">importiert alle neuesten Teile vom VPS</div></div>
+    <div class="recipe"><span class="voice en">"check interference between A and B"</span><span class="voice de">"Kollision zwischen A und B prüfen"</span><div class="params en">boolean intersect → red overlap volume</div><div class="params de">Boolean-Schnitt → rotes Überlappungsvolumen</div></div>
+    <div class="recipe"><span class="voice en">"check clearance at knee joint"</span><span class="voice de">"Spiel am Kniegelenk prüfen"</span><div class="params en">measures gap between mating surfaces (mm)</div><div class="params de">misst Spalt zwischen Kontaktflächen (mm)</div></div>
+    <div class="recipe"><span class="voice en">"cross-section at 500mm"</span><span class="voice de">"Querschnitt bei 500mm"</span><div class="params en">bisects assembly — shows internal fit (destructive!)</div><div class="params de">schneidet Baugruppe — zeigt innere Passung (destruktiv!)</div></div>
+    <div class="recipe"><span class="voice en">"test range of motion on right knee"</span><span class="voice de">"Bewegungsbereich rechtes Knie testen"</span><div class="params en">rotates joint through range, reports collisions</div><div class="params de">dreht Gelenk durch Bereich, meldet Kollisionen</div></div>
+    <div class="recipe"><span class="voice en">"check balance"</span><span class="voice de">"Balance prüfen"</span><div class="params en">center of gravity vs footprint → stable/unstable</div><div class="params de">Schwerpunkt vs Standfläche → stabil/instabil</div></div>
+  </div>
+
 </div>
 
 <!-- ============ TOLERANCE BAR ============ -->

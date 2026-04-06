@@ -228,6 +228,26 @@ object names, dimensions, locations, and custom properties. This enables:
 | "add T-slot channel for M4" | Adjustable bolt channel |
 | "export all parts as STL" | Batch export (individual file per object) |
 
+## Assembly Testing (Full Model Verification)
+
+Before printing 100+ parts, verify the full assembly virtually:
+
+| Say this | What it does |
+|----------|-------------|
+| "load full assembly" | Imports all latest parts from VPS into one scene |
+| "check interference between A and B" | Boolean intersection — shows overlapping volume in red |
+| "check clearance at knee joint" | Measures gap between mating surfaces in mm |
+| "cross-section at 500mm" | Bisects assembly at height — shows internal fit (use undo after!) |
+| "test range of motion on right knee" | Rotates joint through range, reports collision angles |
+| "check balance" | Calculates center of gravity vs footprint — stable or needs base |
+
+**Workflow for full-model test:**
+1. "load full assembly" — get all parts in scene
+2. "check balance" — does it stand?
+3. "check interference between TORSO and ARM" — do parts collide?
+4. "test range of motion on right knee" — does the shin hit the thigh armor?
+5. "cross-section at 500mm" — inspect internal rod channels and joints (Ctrl+Z to undo)
+
 ## Part Naming Convention
 
 When building multi-part assemblies, the AI follows this naming pattern:
