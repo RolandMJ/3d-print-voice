@@ -199,6 +199,8 @@ class PrintVoiceApp:
         )
         self._input.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=6)
         self._input.bind("<Return>", lambda e: self._send_command())
+        self._input.bind("<Up>", self._history_prev)
+        self._input.bind("<Down>", self._history_next)
         self._input.focus_set()
 
         # Send button
@@ -404,8 +406,35 @@ ts.snap_elements = {snap_set}
         text = self._input.get().strip()
         if not text or self._processing:
             return
+        self._cmd_history.append(text)
+        if len(self._cmd_history) > 50:
+            self._cmd_history.pop(0)
+        self._history_idx = len(self._cmd_history)
         self._input.delete(0, tk.END)
         self._process_command(text)
+
+    def _history_prev(self, event=None):
+        """Navigate to previous command in history."""
+        if not self._cmd_history:
+            return "break"
+        if self._history_idx > 0:
+            self._history_idx -= 1
+        self._input.delete(0, tk.END)
+        self._input.insert(0, self._cmd_history[self._history_idx])
+        return "break"
+
+    def _history_next(self, event=None):
+        """Navigate to next command in history."""
+        if not self._cmd_history:
+            return "break"
+        if self._history_idx < len(self._cmd_history) - 1:
+            self._history_idx += 1
+            self._input.delete(0, tk.END)
+            self._input.insert(0, self._cmd_history[self._history_idx])
+        else:
+            self._history_idx = len(self._cmd_history)
+            self._input.delete(0, tk.END)
+        return "break"
 
     def _toggle_mic(self):
         """Toggle voice recording on/off."""
