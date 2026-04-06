@@ -872,7 +872,7 @@ git commit -m "chore: update project docs and gitignore for v0.4.0"
 **Step 1: Run all tests**
 
 ```bash
-cd /home/user/Documents/Claude\ Projects/blender-ai
+cd /path/to/blender-ai
 pytest tests/ -v
 ```
 

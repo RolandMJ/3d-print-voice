@@ -16,7 +16,8 @@ from pathlib import Path
 
 from agent.config import load_config
 
-# Remote VPS paths
+# Remote VPS paths — configure these for your server
+# See docs/DESIGN_SYNC_GUIDE.md for setup instructions
 VPS_HOST = "user@your-vps-ip"
 VPS_BASE = "/home/user/3dprintvoice-designs"
 VPS_ACTIVE = f"{VPS_BASE}/active"

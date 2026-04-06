@@ -73,25 +73,14 @@ branch 'main' set up to track 'origin/main'.
 
 ---
 
-## Your SSH Setup (Already Configured)
+## SSH Setup
 
-Your SSH keys are already set up correctly:
+Your SSH keys should already be configured. To verify your connection to GitHub:
 
-| Key | File | Purpose |
-|-----|------|---------|
-| Personal | `~/.ssh/id_ed25519` | Used for `github.com` (RolandMJ account) |
-| SECONDARY | `~/.ssh/id_ed25519_secondary` | Used for `github-secondary` host |
-
-Your `~/.ssh/config` routes the correct key automatically:
-- `git@github.com:...` uses your personal key
-- `git@github-secondary:...` uses the SECONDARY key
-
-**You don't need to do anything additional for SSH.** It's already working.
-
-To verify your SSH connection to GitHub:
 ```bash
 ssh -T git@github.com
 ```
+
 You should see: `Hi YourUsername! You've successfully authenticated...`
 
 ---
