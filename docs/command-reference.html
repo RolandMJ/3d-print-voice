@@ -9,7 +9,7 @@
   --bg: #1a1a2e;
   --bg2: #16213e;
   --fg: #e0e0e0;
-  --fg-dim: #8899aa;
+  --dim: #8899aa;
   --blue: #4A90D9;
   --yellow: #F0C040;
   --green: #4CAF50;
@@ -18,533 +18,270 @@
   --teal: #00897B;
   --red: #E05050;
   --grey: #607080;
-  --card-bg: rgba(255,255,255,0.04);
-  --card-border: rgba(255,255,255,0.08);
+  --card: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--fg);
-  line-height: 1.4;
-  padding: 20px;
-}
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-  background: var(--bg2);
-  border-radius: 12px;
-  margin-bottom: 16px;
-  border: 1px solid var(--card-border);
-}
-.header h1 { font-size: 1.6em; font-weight: 700; }
-.header h1 span { color: var(--orange); }
-.header .version { color: var(--fg-dim); font-size: 0.85em; }
-.lang-toggle { display: flex; gap: 4px; }
-.lang-toggle button {
-  padding: 6px 14px; border: 1px solid var(--card-border); border-radius: 6px;
-  background: transparent; color: var(--fg-dim); cursor: pointer; font-size: 0.85em;
-  transition: all 0.2s;
-}
-.lang-toggle button.active { background: var(--orange); color: white; border-color: var(--orange); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--fg); padding:12px; font-size:13px; line-height:1.35; }
+.hdr { display:flex; justify-content:space-between; align-items:center; padding:8px 14px; background:var(--bg2); border-radius:8px; margin-bottom:10px; border:1px solid var(--border); }
+.hdr h1 { font-size:1.3em; } .hdr h1 span { color:var(--orange); }
+.hdr .v { color:var(--dim); font-size:0.8em; }
+.lang button { padding:4px 10px; border:1px solid var(--border); border-radius:4px; background:transparent; color:var(--dim); cursor:pointer; font-size:0.8em; margin-left:3px; }
+.lang button.on { background:var(--orange); color:#fff; border-color:var(--orange); }
+.toast { position:fixed; top:10px; right:10px; background:var(--green); color:#fff; padding:8px 16px; border-radius:6px; font-size:0.85em; display:none; z-index:999; }
+.cols { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+.sec { background:var(--card); border-radius:8px; border:1px solid var(--border); overflow:hidden; }
+.sec-h { padding:5px 8px; font-weight:700; font-size:0.7em; text-transform:uppercase; letter-spacing:0.8px; text-align:center; color:#fff; }
+.sec-h.blue{background:var(--blue)} .sec-h.yellow{background:var(--yellow);color:#1a1a2e} .sec-h.green{background:var(--green)} .sec-h.orange{background:var(--orange)} .sec-h.purple{background:var(--purple)} .sec-h.teal{background:var(--teal)} .sec-h.red{background:var(--red)} .sec-h.grey{background:var(--grey)}
+.sec-body { padding:4px; }
+.cmd { padding:3px 6px; margin-bottom:3px; border-radius:4px; cursor:pointer; border-left:2px solid transparent; transition:background 0.1s; }
+.cmd:hover { background:rgba(255,255,255,0.08); }
+.cmd:active { background:rgba(232,125,13,0.2); }
+.cmd .label { font-size:0.7em; color:var(--dim); display:block; }
+.cmd .voice { font-family:'Consolas','Fira Code',monospace; font-size:0.78em; color:var(--fg); font-weight:600; display:block; }
+.blue-b .cmd{border-left-color:var(--blue)} .yellow-b .cmd{border-left-color:var(--yellow)} .green-b .cmd{border-left-color:var(--green)} .orange-b .cmd{border-left-color:var(--orange)} .purple-b .cmd{border-left-color:var(--purple)} .teal-b .cmd{border-left-color:var(--teal)} .red-b .cmd{border-left-color:var(--red)} .grey-b .cmd{border-left-color:var(--grey)}
 
-/* Command grid */
-.grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 16px; }
-.section {
-  background: var(--card-bg);
-  border-radius: 10px;
-  border: 1px solid var(--card-border);
-  overflow: hidden;
-}
-.section-head {
-  padding: 8px 10px;
-  font-weight: 700;
-  font-size: 0.8em;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  text-align: center;
-}
-.section-head.blue { background: var(--blue); color: white; }
-.section-head.yellow { background: var(--yellow); color: #1a1a2e; }
-.section-head.green { background: var(--green); color: white; }
-.section-head.orange { background: var(--orange); color: white; }
-.section-head.purple { background: var(--purple); color: white; }
-.section-head.teal { background: var(--teal); color: white; }
-.section-head.red { background: var(--red); color: white; }
-.section-head.grey { background: var(--grey); color: white; }
-.cmd-list { padding: 6px; }
-.cmd {
-  padding: 5px 7px;
-  margin-bottom: 4px;
-  border-radius: 6px;
-  font-size: 0.72em;
-  border-left: 3px solid transparent;
-  transition: background 0.15s;
-}
-.cmd:hover { background: rgba(255,255,255,0.06); }
-.cmd .voice {
-  font-family: 'Consolas', 'Fira Code', monospace;
-  color: var(--fg);
-  font-weight: 600;
-  display: block;
-}
-.cmd .desc {
-  color: var(--fg-dim);
-  font-size: 0.9em;
-  margin-top: 1px;
-}
-.cmd .icon { margin-right: 4px; font-size: 1.1em; }
-.section.blue-s .cmd { border-left-color: var(--blue); }
-.section.yellow-s .cmd { border-left-color: var(--yellow); }
-.section.green-s .cmd { border-left-color: var(--green); }
-.section.orange-s .cmd { border-left-color: var(--orange); }
-.section.purple-s .cmd { border-left-color: var(--purple); }
-.section.teal-s .cmd { border-left-color: var(--teal); }
-.section.red-s .cmd { border-left-color: var(--red); }
-.section.grey-s .cmd { border-left-color: var(--grey); }
+.recipe-row { margin-top:8px; }
+.recipe-row .sec-h { border-radius:6px 6px 0 0; }
+.r-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:8px; background:var(--card); border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; }
+.r-group-title { font-size:0.7em; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:2px 6px; border-radius:4px; display:inline-block; margin-bottom:4px; color:#fff; }
+.rg-enc .r-group-title{background:var(--blue)} .rg-hw .r-group-title{background:var(--orange)} .rg-mech .r-group-title{background:var(--purple)} .rg-asm .r-group-title{background:var(--green)} .rg-surf .r-group-title{background:var(--teal)} .rg-org .r-group-title{background:var(--yellow);color:#1a1a2e} .rg-art .r-group-title{background:var(--red)} .rg-curve .r-group-title{background:var(--grey)} .rg-test .r-group-title{background:var(--blue)} .rg-prod .r-group-title{background:var(--orange)} .rg-organic .r-group-title{background:var(--purple)}
 
-/* Recipes */
-.recipes-header {
-  padding: 10px 20px;
-  background: var(--bg2);
-  border-radius: 12px 12px 0 0;
-  border: 1px solid var(--card-border);
-  border-bottom: none;
-  font-weight: 700;
-  font-size: 1em;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.recipes-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding: 12px;
-  background: var(--card-bg);
-  border-radius: 0 0 12px 12px;
-  border: 1px solid var(--card-border);
-  border-top: none;
-}
-.recipe-group { }
-.recipe-group-title {
-  font-weight: 700;
-  font-size: 0.78em;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  display: inline-block;
-}
-.rg-enclosure .recipe-group-title { background: var(--blue); color: white; }
-.rg-hardware .recipe-group-title { background: var(--orange); color: white; }
-.rg-mechanical .recipe-group-title { background: var(--purple); color: white; }
-.rg-assembly .recipe-group-title { background: var(--green); color: white; }
-.rg-structure .recipe-group-title { background: var(--teal); color: white; }
-.rg-organizer .recipe-group-title { background: var(--yellow); color: #1a1a2e; }
-.recipe {
-  padding: 5px 8px;
-  margin-bottom: 3px;
-  border-radius: 5px;
-  font-size: 0.72em;
-}
-.recipe:hover { background: rgba(255,255,255,0.06); }
-.recipe .voice {
-  font-family: 'Consolas', 'Fira Code', monospace;
-  color: var(--fg);
-  font-weight: 600;
-}
-.recipe .params {
-  color: var(--fg-dim);
-  font-size: 0.9em;
-  margin-top: 1px;
-}
-
-/* Tolerance bar */
-.tolerance-bar {
-  display: flex;
-  gap: 10px;
-  padding: 10px 16px;
-  background: var(--bg2);
-  border-radius: 10px;
-  border: 1px solid var(--card-border);
-  margin-top: 12px;
-  align-items: center;
-  font-size: 0.78em;
-}
-.tolerance-bar .tol-label { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-right: 8px; }
-.tol-item {
-  padding: 4px 12px;
-  border-radius: 6px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  text-align: center;
-}
-.tol-item .tol-name { font-weight: 700; }
-.tol-item .tol-val { color: var(--orange); font-family: monospace; font-weight: 700; }
-.tol-item .tol-use { color: var(--fg-dim); font-size: 0.9em; }
-
-/* Footer */
-.footer {
-  margin-top: 12px;
-  text-align: center;
-  color: var(--fg-dim);
-  font-size: 0.7em;
-}
-
-/* DE translations hidden by default */
-.de { display: none; }
-
-/* Print styles */
-@media print {
-  body { background: white; color: #111; padding: 8mm; font-size: 9pt; }
-  .header { background: #f5f5f5; border-color: #ddd; }
-  .header h1 { color: #111; }
-  .header h1 span { color: var(--orange); }
-  .lang-toggle { display: none; }
-  .section { border-color: #ddd; break-inside: avoid; }
-  .section-head { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .cmd .voice { color: #111; }
-  .recipes-header { background: #f5f5f5; }
-  .recipes-grid { background: #fafafa; border-color: #ddd; }
-  .recipe .voice { color: #111; }
-  .tolerance-bar { background: #f5f5f5; border-color: #ddd; }
-  .card-bg { background: #fafafa; }
-  @page { size: A2 landscape; margin: 10mm; }
-}
+.tol { display:flex; gap:8px; padding:8px 12px; background:var(--bg2); border-radius:6px; border:1px solid var(--border); margin-top:8px; align-items:center; font-size:0.75em; }
+.tol-label { font-weight:700; text-transform:uppercase; letter-spacing:0.8px; }
+.tol-item { padding:3px 10px; border-radius:4px; background:var(--card); border:1px solid var(--border); text-align:center; }
+.tol-item .n { font-weight:700; } .tol-item .v { color:var(--orange); font-family:monospace; font-weight:700; } .tol-item .u { color:var(--dim); font-size:0.9em; }
+.keys { margin-top:8px; padding:6px 12px; background:var(--bg2); border-radius:6px; border:1px solid var(--border); font-size:0.75em; color:var(--dim); text-align:center; }
+.keys kbd { background:var(--card); border:1px solid var(--border); padding:1px 6px; border-radius:3px; color:var(--fg); font-family:monospace; }
+.ft { margin-top:6px; text-align:center; color:var(--dim); font-size:0.65em; }
+.de { display:none; }
+@media print { body{background:#fff;color:#111;font-size:8pt;padding:6mm} .hdr{background:#f5f5f5} .cmd .voice{color:#111} .sec-h{print-color-adjust:exact;-webkit-print-color-adjust:exact} @page{size:A2 landscape;margin:8mm} .toast{display:none!important} }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <h1><span>3DPrintVoice</span> Command Reference</h1>
-    <div class="version">v0.4.0 — Voice & text commands for 3D printing in Blender</div>
-  </div>
-  <div class="lang-toggle">
-    <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
-    <button id="btn-de" onclick="setLang('de')">DE</button>
-  </div>
+<div class="hdr">
+  <div><h1><span>3DPrintVoice</span> Command Reference</h1><div class="v">v0.4.0 — Click any command to send it to the app</div></div>
+  <div class="lang"><button id="ben" class="on" onclick="setLang('en')">EN</button><button id="bde" onclick="setLang('de')">DE</button></div>
+</div>
+<div class="toast" id="toast">Sent to 3DPrintVoice</div>
+
+<!-- ===== COMMANDS ===== -->
+<div class="cols">
+
+<!-- CREATE -->
+<div class="sec blue-b">
+<div class="sec-h blue">Create</div>
+<div class="sec-body">
+  <div class="cmd" onclick="send(this)"><span class="label en">Cube</span><span class="label de">Würfel</span><span class="voice">create a 40mm cube</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Sphere</span><span class="label de">Kugel</span><span class="voice">create a sphere radius 20mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Cylinder</span><span class="label de">Zylinder</span><span class="voice">create a cylinder 10mm radius 50mm tall</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Cone</span><span class="label de">Kegel</span><span class="voice">create a cone 15mm radius 30mm tall</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Torus</span><span class="label de">Torus</span><span class="voice">create a torus major 20mm minor 5mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Tube / Pipe</span><span class="label de">Rohr</span><span class="voice">create a tube outer 10mm wall 1.5mm height 30mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Rounded box</span><span class="label de">Abgerundete Box</span><span class="voice">create a rounded box 40mm with 2mm radius</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Washer / Ring</span><span class="label de">Scheibe / Ring</span><span class="voice">create a washer outer 10mm inner 5mm 2mm thick</span></div>
+</div></div>
+
+<!-- SELECT -->
+<div class="sec yellow-b">
+<div class="sec-h yellow">Select</div>
+<div class="sec-body">
+  <div class="cmd" onclick="send(this)"><span class="label en">Select all</span><span class="label de">Alles auswählen</span><span class="voice">select all</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Select by name</span><span class="label de">Nach Name auswählen</span><span class="voice">select the cube</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Deselect</span><span class="label de">Abwählen</span><span class="voice">deselect all</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Edit mode</span><span class="label de">Bearbeitungsmodus</span><span class="voice">switch to edit mode</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Object mode</span><span class="label de">Objektmodus</span><span class="voice">switch to object mode</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Top face</span><span class="label de">Obere Fläche</span><span class="voice">select the top face</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Bottom edges</span><span class="label de">Untere Kanten</span><span class="voice">select bottom edges</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Invert</span><span class="label de">Umkehren</span><span class="voice">invert selection</span></div>
+</div></div>
+
+<!-- POSITION -->
+<div class="sec green-b">
+<div class="sec-h green">Position</div>
+<div class="sec-body">
+  <div class="cmd" onclick="send(this)"><span class="label en">Move up</span><span class="label de">Nach oben</span><span class="voice">move it up 30mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Move left</span><span class="label de">Nach links</span><span class="voice">move it left 20mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Rotate</span><span class="label de">Drehen</span><span class="voice">rotate 45 degrees on Z</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Scale</span><span class="label de">Skalieren</span><span class="voice">scale it to 200%</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Set size</span><span class="label de">Maße setzen</span><span class="voice">set dimensions 50x30x20mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Apply transforms</span><span class="label de">Transformationen anwenden</span><span class="voice">apply all transforms</span></div>
+</div></div>
+
+<!-- MODIFY -->
+<div class="sec orange-b">
+<div class="sec-h orange">Modify</div>
+<div class="sec-body">
+  <div class="cmd" onclick="send(this)"><span class="label en">Hollow</span><span class="label de">Aushöhlen</span><span class="voice">hollow it out 1.5mm walls</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Round edges</span><span class="label de">Kanten abrunden</span><span class="voice">round all edges 0.5mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Chamfer</span><span class="label de">Anfasen</span><span class="voice">chamfer top edges 1mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Extrude</span><span class="label de">Extrudieren</span><span class="voice">extrude up 10mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Inset</span><span class="label de">Einrücken</span><span class="voice">inset faces 2mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Loop cut</span><span class="label de">Kantenschnitt</span><span class="voice">loop cut 3 times</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Array</span><span class="label de">Reihe</span><span class="voice">array 5 copies spaced 2mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Mirror</span><span class="label de">Spiegeln</span><span class="voice">mirror on X axis</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Subdivide</span><span class="label de">Unterteilen</span><span class="voice">subdivide smooth 2 levels</span></div>
+</div></div>
+
+<!-- COMBINE -->
+<div class="sec purple-b">
+<div class="sec-h purple">Combine</div>
+<div class="sec-body">
+  <div class="cmd" onclick="send(this)"><span class="label en">Boolean cut</span><span class="label de">Ausschneiden</span><span class="voice">cut Cutter from Box</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Boolean join</span><span class="label de">Verbinden</span><span class="voice">join Lid to Box</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Intersect</span><span class="label de">Schnittmenge</span><span class="voice">intersect A and B</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Cut slot</span><span class="label de">Schlitz schneiden</span><span class="voice">cut a slot 20x3x5mm at top</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Through hole</span><span class="label de">Durchgangsloch</span><span class="voice">add a 3mm through hole</span></div>
+</div></div>
+
+<!-- PREPARE -->
+<div class="sec teal-b">
+<div class="sec-h teal">Prepare</div>
+<div class="sec-body">
+  <div class="cmd" onclick="send(this)"><span class="label en">Fix normals</span><span class="label de">Normalen korrigieren</span><span class="voice">fix normals</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Remove doubles</span><span class="label de">Duplikate entfernen</span><span class="voice">remove doubles</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Apply modifiers</span><span class="label de">Modifier anwenden</span><span class="voice">apply all modifiers</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Delete all</span><span class="label de">Alles löschen</span><span class="voice">delete everything</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Export STL</span><span class="label de">STL exportieren</span><span class="voice">export as STL</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Send to slicer (F3)</span><span class="label de">An Slicer senden (F3)</span><span class="voice">send to slicer</span></div>
+</div></div>
+
+<!-- JOINTS -->
+<div class="sec red-b">
+<div class="sec-h red">Joints</div>
+<div class="sec-body">
+  <div class="cmd" onclick="send(this)"><span class="label en">Ball joint (M)</span><span class="label de">Kugelgelenk (M)</span><span class="voice">create medium ball-and-socket joint</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Ratchet joint</span><span class="label de">Rastgelenk</span><span class="voice">create ratchet joint 12 click stops</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Double hinge</span><span class="label de">Doppelscharnier</span><span class="voice">create double-hinge knee joint</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Swivel</span><span class="label de">Drehgelenk</span><span class="voice">create swivel joint for waist</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Friction peg</span><span class="label de">Reibungsstift</span><span class="voice">create friction peg joint 4mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Pin hinge</span><span class="label de">Stiftscharnier</span><span class="voice">add pin hinge 20mm wide</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Snap-fit clip</span><span class="label de">Schnappverbindung</span><span class="voice">add snap-fit clip 15mm long</span></div>
+</div></div>
+
+<!-- HARDWARE -->
+<div class="sec grey-b">
+<div class="sec-h grey">Hardware (DIN)</div>
+<div class="sec-body">
+  <div class="cmd" onclick="send(this)"><span class="label en">Heat-set insert</span><span class="label de">Einschmelzmutter</span><span class="voice">add M3 heat-set insert pocket</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Screw boss + ribs</span><span class="label de">Schraubdom + Rippen</span><span class="voice">add M3 screw boss with ribs</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">DIN 912 counterbore</span><span class="label de">DIN 912 Senkung</span><span class="voice">add M4 DIN 912 counterbore</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Hex nut pocket</span><span class="label de">Sechskantmutter-Tasche</span><span class="voice">add M4 hex nut pocket</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Rod sleeve 6mm</span><span class="label de">Stabhülse 6mm</span><span class="voice">add 6mm steel rod sleeve</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Threaded rod M6</span><span class="label de">Gewindestange M6</span><span class="voice">add M6 threaded rod channel</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Spring pin 3mm</span><span class="label de">Spannhülse 3mm</span><span class="voice">add 3mm spring pin hole</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Magnet pocket</span><span class="label de">Magnettasche</span><span class="voice">add magnet pocket 6x3mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Countersunk M3</span><span class="label de">Senkkopf M3</span><span class="voice">add countersunk M3 hole</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Zip-tie anchor</span><span class="label de">Kabelbinder-Halter</span><span class="voice">add zip-tie anchor point</span></div>
+</div></div>
+
+</div><!-- /cols -->
+
+<!-- ===== RECIPES ===== -->
+<div class="recipe-row">
+<div class="sec-h orange">Recipes — Click to send, edit values before pressing Enter</div>
+<div class="r-grid">
+
+<div class="rg-enc"><div class="r-group-title">Enclosures / Gehäuse</div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Box + sliding lid</span><span class="label de">Box + Schiebedeckel</span><span class="voice">make a box with sliding lid 40x30x20mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Lip-groove enclosure</span><span class="label de">Nut-Feder-Gehäuse</span><span class="voice">make an enclosure with lip-groove lid 60x40x25mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Vent grid</span><span class="label de">Lüftungsgitter</span><span class="voice">add ventilation grid 30x20mm honeycomb</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Cable pass-through</span><span class="label de">Kabeldurchführung</span><span class="voice">add cable pass-through 5mm with strain relief</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">PCB standoffs</span><span class="label de">PCB-Abstandshalter</span><span class="voice">add PCB standoffs for Raspberry Pi</span></div>
 </div>
 
-<!-- ============ COMMAND GRID ============ -->
-<div class="grid">
-
-  <!-- CREATE -->
-  <div class="section blue-s">
-    <div class="section-head blue">Create</div>
-    <div class="cmd-list">
-      <div class="cmd"><span class="voice en">"create a 40mm cube"</span><span class="voice de">"erstelle einen 40mm Würfel"</span></div>
-      <div class="cmd"><span class="voice en">"create a sphere radius 20mm"</span><span class="voice de">"erstelle eine Kugel Radius 20mm"</span></div>
-      <div class="cmd"><span class="voice en">"create a cylinder 10mm radius 50mm tall"</span><span class="voice de">"erstelle Zylinder 10mm Radius 50mm hoch"</span></div>
-      <div class="cmd"><span class="voice en">"create a cone 15mm radius 30mm tall"</span><span class="voice de">"erstelle Kegel 15mm Radius 30mm hoch"</span></div>
-      <div class="cmd"><span class="voice en">"create a torus major 20mm minor 5mm"</span><span class="voice de">"erstelle Torus Haupt 20mm Neben 5mm"</span></div>
-      <div class="cmd"><span class="voice en">"create a tube outer 10mm wall 1.5mm height 30mm"</span><span class="voice de">"erstelle Rohr außen 10mm Wand 1.5mm Höhe 30mm"</span></div>
-      <div class="cmd"><span class="voice en">"create a rounded box 40mm with 2mm radius"</span><span class="voice de">"erstelle Box 40mm mit 2mm Abrundung"</span></div>
-      <div class="cmd"><span class="voice en">"create a washer outer 10mm inner 5mm 2mm thick"</span><span class="voice de">"erstelle Scheibe außen 10mm innen 5mm 2mm dick"</span></div>
-    </div>
-  </div>
-
-  <!-- SELECT -->
-  <div class="section yellow-s">
-    <div class="section-head yellow">Select</div>
-    <div class="cmd-list">
-      <div class="cmd"><span class="voice en">"select all"</span><span class="voice de">"alles auswählen"</span></div>
-      <div class="cmd"><span class="voice en">"select the cube"</span><span class="voice de">"den Würfel auswählen"</span></div>
-      <div class="cmd"><span class="voice en">"deselect all"</span><span class="voice de">"alles abwählen"</span></div>
-      <div class="cmd"><span class="voice en">"switch to edit mode"</span><span class="voice de">"in Bearbeitungsmodus wechseln"</span></div>
-      <div class="cmd"><span class="voice en">"switch to object mode"</span><span class="voice de">"in Objektmodus wechseln"</span></div>
-      <div class="cmd"><span class="voice en">"select the top face"</span><span class="voice de">"obere Fläche auswählen"</span></div>
-      <div class="cmd"><span class="voice en">"select bottom edges"</span><span class="voice de">"untere Kanten auswählen"</span></div>
-      <div class="cmd"><span class="voice en">"invert selection"</span><span class="voice de">"Auswahl umkehren"</span></div>
-    </div>
-  </div>
-
-  <!-- POSITION -->
-  <div class="section green-s">
-    <div class="section-head green">Position</div>
-    <div class="cmd-list">
-      <div class="cmd"><span class="voice en">"move it up 30mm"</span><span class="voice de">"30mm nach oben verschieben"</span></div>
-      <div class="cmd"><span class="voice en">"move it left 20mm"</span><span class="voice de">"20mm nach links verschieben"</span></div>
-      <div class="cmd"><span class="voice en">"rotate 45 degrees on Z"</span><span class="voice de">"45 Grad um Z drehen"</span></div>
-      <div class="cmd"><span class="voice en">"scale it to 200%"</span><span class="voice de">"auf 200% skalieren"</span></div>
-      <div class="cmd"><span class="voice en">"set dimensions 50x30x20mm"</span><span class="voice de">"Masse auf 50x30x20mm setzen"</span></div>
-      <div class="cmd"><span class="voice en">"apply all transforms"</span><span class="voice de">"alle Transformationen anwenden"</span></div>
-    </div>
-  </div>
-
-  <!-- MODIFY -->
-  <div class="section orange-s">
-    <div class="section-head orange">Modify</div>
-    <div class="cmd-list">
-      <div class="cmd"><span class="voice en">"hollow it out 1.5mm walls"</span><span class="voice de">"aushöhlen 1.5mm Wandstärke"</span></div>
-      <div class="cmd"><span class="voice en">"round all edges 0.5mm"</span><span class="voice de">"alle Kanten 0.5mm abrunden"</span></div>
-      <div class="cmd"><span class="voice en">"chamfer top edges 1mm"</span><span class="voice de">"obere Kanten 1mm anfasen"</span></div>
-      <div class="cmd"><span class="voice en">"extrude up 10mm"</span><span class="voice de">"10mm nach oben extrudieren"</span></div>
-      <div class="cmd"><span class="voice en">"inset faces 2mm"</span><span class="voice de">"Flächen 2mm einrücken"</span></div>
-      <div class="cmd"><span class="voice en">"loop cut 3 times"</span><span class="voice de">"3 Kantenschnitte einfügen"</span></div>
-      <div class="cmd"><span class="voice en">"array 5 copies spaced 2mm"</span><span class="voice de">"5 Kopien mit 2mm Abstand"</span></div>
-      <div class="cmd"><span class="voice en">"mirror on X axis"</span><span class="voice de">"an X-Achse spiegeln"</span></div>
-      <div class="cmd"><span class="voice en">"subdivide smooth 2 levels"</span><span class="voice de">"2 Ebenen glatt unterteilen"</span></div>
-      <div class="cmd"><span class="voice en">"add fillet 1mm to bottom edges"</span><span class="voice de">"1mm Rundung an untere Kanten"</span></div>
-    </div>
-  </div>
-
-  <!-- COMBINE -->
-  <div class="section purple-s">
-    <div class="section-head purple">Combine</div>
-    <div class="cmd-list">
-      <div class="cmd"><span class="voice en">"cut Cutter from Box"</span><span class="voice de">"Cutter aus Box ausschneiden"</span></div>
-      <div class="cmd"><span class="voice en">"join Lid to Box"</span><span class="voice de">"Deckel mit Box verbinden"</span></div>
-      <div class="cmd"><span class="voice en">"intersect A and B"</span><span class="voice de">"Schnittmenge von A und B"</span></div>
-      <div class="cmd"><span class="voice en">"cut a slot 20x3x5mm at top"</span><span class="voice de">"Schlitz 20x3x5mm oben einfügen"</span></div>
-      <div class="cmd"><span class="voice en">"add a 3mm through hole"</span><span class="voice de">"3mm Durchgangsloch einfügen"</span></div>
-    </div>
-  </div>
-
-  <!-- PREPARE -->
-  <div class="section teal-s">
-    <div class="section-head teal">Prepare</div>
-    <div class="cmd-list">
-      <div class="cmd"><span class="voice en">"fix normals"</span><span class="voice de">"Normalen korrigieren"</span></div>
-      <div class="cmd"><span class="voice en">"remove doubles"</span><span class="voice de">"Duplikate entfernen"</span></div>
-      <div class="cmd"><span class="voice en">"apply all modifiers"</span><span class="voice de">"alle Modifier anwenden"</span></div>
-      <div class="cmd"><span class="voice en">"delete everything"</span><span class="voice de">"alles löschen"</span></div>
-      <div class="cmd"><span class="voice en">"recalculate normals outside"</span><span class="voice de">"Normalen nach außen neuberechnen"</span></div>
-    </div>
-  </div>
-
-  <!-- EXPORT -->
-  <div class="section red-s">
-    <div class="section-head red">Export</div>
-    <div class="cmd-list">
-      <div class="cmd"><span class="voice en">"export as STL"</span><span class="voice de">"als STL exportieren"</span></div>
-      <div class="cmd"><span class="voice en">"export selected as STL"</span><span class="voice de">"Auswahl als STL exportieren"</span></div>
-    </div>
-  </div>
-
-  <!-- TOLERANCE -->
-  <div class="section grey-s">
-    <div class="section-head grey">Tolerance</div>
-    <div class="cmd-list">
-      <div class="cmd">
-        <span class="voice" style="color:var(--green)">Sliding 0.25mm</span>
-        <span class="desc en">Lids, drawers</span><span class="desc de">Deckel, Schubladen</span>
-      </div>
-      <div class="cmd">
-        <span class="voice" style="color:var(--yellow)">Snug 0.15mm</span>
-        <span class="desc en">Click-fit, caps</span><span class="desc de">Klick-Passungen, Kappen</span>
-      </div>
-      <div class="cmd">
-        <span class="voice" style="color:var(--orange)">Press 0.05mm</span>
-        <span class="desc en">Permanent, axles</span><span class="desc de">Permanent, Achsen</span>
-      </div>
-      <div class="cmd">
-        <span class="voice" style="color:var(--red)">Loose 0.40mm</span>
-        <span class="desc en">Hinges, pivots</span><span class="desc de">Scharniere, Drehpunkte</span>
-      </div>
-    </div>
-  </div>
-
+<div class="rg-curve"><div class="r-group-title">Curved Panels / Gewölbt</div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Curved armor panel</span><span class="label de">Gewölbtes Paneel</span><span class="voice">create curved panel 60mm wide 90 degrees</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Shoulder pauldron</span><span class="label de">Schulterpanzer</span><span class="voice">create shoulder pauldron 120 degrees</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Tapered panel</span><span class="label de">Konisches Paneel</span><span class="voice">create tapered armor panel</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Curved tube</span><span class="label de">Gebogenes Rohr</span><span class="voice">create curved tube 90 degrees radius 30mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Overlap lip</span><span class="label de">Überlappungslippe</span><span class="voice">add overlap lip to panel edge</span></div>
 </div>
 
-<!-- ============ RECIPES ============ -->
-<div class="recipes-header">
-  <span class="en">Recipes — Functional 3D Print Parts</span>
-  <span class="de">Rezepte — Funktionale 3D-Druck Teile</span>
-</div>
-<div class="recipes-grid">
-
-  <!-- Enclosures -->
-  <div class="recipe-group rg-enclosure">
-    <div class="recipe-group-title">
-      <span class="en">Enclosures</span><span class="de">Gehäuse</span>
-    </div>
-    <div class="recipe"><span class="voice en">"make a box with sliding lid 40x30x20mm"</span><span class="voice de">"Box mit Schiebedeckel 40x30x20mm"</span><div class="params en">wall, lid height, lip depth, clearance</div><div class="params de">Wand, Deckelhoehe, Lippe, Spiel</div></div>
-    <div class="recipe"><span class="voice en">"make an enclosure with lip-groove lid 60x40x25mm"</span><span class="voice de">"Gehäuse mit Nut-Feder-Deckel 60x40x25mm"</span><div class="params en">wall, lip depth 3mm, screw bosses in corners</div><div class="params de">Wand, Lippe 3mm, Schraubdome in Ecken</div></div>
-    <div class="recipe"><span class="voice en">"add ventilation grid 30x20mm honeycomb"</span><span class="voice de">"Lüftungsgitter 30x20mm Waben hinzufügen"</span><div class="params en">slot width 2mm, web 1.2mm, pattern</div><div class="params de">Schlitzbreite 2mm, Steg 1.2mm, Muster</div></div>
-    <div class="recipe"><span class="voice en">"add cable pass-through 5mm with strain relief"</span><span class="voice de">"Kabeldurchführung 5mm mit Zugentlastung"</span><div class="params en">cable dia, funnel, zip-tie slot</div><div class="params de">Kabeldurchmesser, Trichter, Kabelbinder-Schlitz</div></div>
-    <div class="recipe"><span class="voice en">"add PCB standoffs for Raspberry Pi"</span><span class="voice de">"PCB-Abstandshalter für Raspberry Pi"</span><div class="params en">board preset, M2.5, standoff height 5mm</div><div class="params de">Board-Vorlage, M2.5, Höhe 5mm</div></div>
-  </div>
-
-  <!-- Hardware -->
-  <div class="recipe-group rg-hardware">
-    <div class="recipe-group-title">
-      <span class="en">Hardware Integration</span><span class="de">Hardware-Integration</span>
-    </div>
-    <div class="recipe"><span class="voice en">"add M3 heat-set insert pocket"</span><span class="voice de">"M3 Einschmelzmutter-Tasche hinzufügen"</span><div class="params en">M2/M2.5/M3/M4/M5, depth, taper</div><div class="params de">M2/M2.5/M3/M4/M5, Tiefe, Konus</div></div>
-    <div class="recipe"><span class="voice en">"add M3 screw boss with ribs"</span><span class="voice de">"M3 Schraubdom mit Rippen"</span><div class="params en">screw size, boss height, 4 ribs</div><div class="params de">Schraubengröße, Domhöhe, 4 Rippen</div></div>
-    <div class="recipe"><span class="voice en">"add M4 counterbore hole"</span><span class="voice de">"M4 Senkbohrung hinzufügen"</span><div class="params en">through-hole + wider pocket for bolt head</div><div class="params de">Durchgangsloch + Senkung für Schraubenkopf</div></div>
-    <div class="recipe"><span class="voice en">"add zip-tie anchor point"</span><span class="voice de">"Kabelbinder-Befestigung hinzufügen"</span><div class="params en">3.6mm or 4.8mm width, bridge/loop</div><div class="params de">3.6mm oder 4.8mm breit, Bruecke/Schleife</div></div>
-    <div class="recipe"><span class="voice en">"add M3 standoff posts at corners"</span><span class="voice de">"M3 Abstandsbolzen an Ecken"</span><div class="params en">height, screw hole, positions</div><div class="params de">Höhe, Schraubenloch, Positionen</div></div>
-    <div class="recipe"><span class="voice en">"add M6 threaded rod channel"</span><span class="voice de">"M6 Gewindestangen-Kanal"</span><div class="params en">DIN 975, 6.6mm clearance, M4-M10</div><div class="params de">DIN 975, 6.6mm Durchlass, M4-M10</div></div>
-    <div class="recipe"><span class="voice en">"add 3mm spring pin hole"</span><span class="voice de">"3mm Spannhülsen-Loch (DIN 1481)"</span><div class="params en">exact nominal, pin compresses to fit</div><div class="params de">exakter Nenndurchmesser, Hülse federt</div></div>
-    <div class="recipe"><span class="voice en">"add M4 DIN 912 counterbore"</span><span class="voice de">"M4 DIN 912 Senkung"</span><div class="params en">4.5mm shaft, 7mm head, 4mm deep</div><div class="params de">4.5mm Schaft, 7mm Kopf, 4mm tief</div></div>
-    <div class="recipe"><span class="voice en">"add M4 hex nut pocket"</span><span class="voice de">"M4 Sechskantmutter-Tasche (DIN 934)"</span><div class="params en">7mm across flats, 3.2mm deep</div><div class="params de">7mm Schlüsselweite, 3.2mm tief</div></div>
-  </div>
-
-  <!-- Mechanical -->
-  <div class="recipe-group rg-mechanical">
-    <div class="recipe-group-title">
-      <span class="en">Mechanical Features</span><span class="de">Mechanische Funktionen</span>
-    </div>
-    <div class="recipe"><span class="voice en">"add snap-fit clip 15mm long"</span><span class="voice de">"Schnappverbindung 15mm lang"</span><div class="params en">beam length, thickness 1.5mm, catch 1mm</div><div class="params de">Armlaenge, Dicke 1.5mm, Haken 1mm</div></div>
-    <div class="recipe"><span class="voice en">"add pin hinge 20mm wide"</span><span class="voice de">"Stiftscharnier 20mm breit"</span><div class="params en">knuckle count 3, pin dia 3mm, clearance</div><div class="params de">3 Knöchel, Stift 3mm, Spiel</div></div>
-    <div class="recipe"><span class="voice en">"make threaded cap diameter 30mm"</span><span class="voice de">"Schraubdeckel Durchmesser 30mm"</span><div class="params en">pitch 3mm, wall 2mm, 2 full turns</div><div class="params de">Steigung 3mm, Wand 2mm, 2 Umdrehungen</div></div>
-  </div>
-
-  <!-- Assembly -->
-  <div class="recipe-group rg-assembly">
-    <div class="recipe-group-title">
-      <span class="en">Assembly Joints</span><span class="de">Verbindungen</span>
-    </div>
-    <div class="recipe"><span class="voice en">"make peg and hole snug fit 6mm"</span><span class="voice de">"Stift und Loch Presspassung 6mm"</span><div class="params en">peg radius, clearance 0.15mm/side</div><div class="params de">Stiftradius, Spiel 0.15mm/Seite</div></div>
-    <div class="recipe"><span class="voice en">"add dovetail rail 80mm long"</span><span class="voice de">"Schwalbenschwanz-Schiene 80mm lang"</span><div class="params en">width, height, 60deg angle, 0.2mm clearance</div><div class="params de">Breite, Höhe, 60 Grad, 0.2mm Spiel</div></div>
-    <div class="recipe"><span class="voice en">"add T-slot channel for M4"</span><span class="voice de">"T-Nut-Kanal für M4"</span><div class="params en">bolt size, channel length, drop-in slot</div><div class="params de">Schraubengröße, Kanallänge, Einwurfschlitz</div></div>
-  </div>
-
-  <!-- Structure -->
-  <div class="recipe-group rg-structure">
-    <div class="recipe-group-title">
-      <span class="en">Structural</span><span class="de">Struktur</span>
-    </div>
-    <div class="recipe"><span class="voice en">"add 4 reinforcement ribs 1.2mm thick"</span><span class="voice de">"4 Verstaerkungsrippen 1.2mm dick"</span><div class="params en">rib height, spacing, triangular shape</div><div class="params de">Rippenhoehe, Abstand, Dreiecksform</div></div>
-    <div class="recipe"><span class="voice en">"add gusset at wall base"</span><span class="voice de">"Eckverstaerkung an Wandfuss"</span><div class="params en">triangle, thickness 1.5mm, wall junction</div><div class="params de">Dreieck, Dicke 1.5mm, Wandanschluss</div></div>
-    <div class="recipe"><span class="voice en">"fillet inside corners 2mm"</span><span class="voice de">"Innenkanten 2mm abrunden"</span><div class="params en">stress relief, 8 segments</div><div class="params de">Spannungsabbau, 8 Segmente</div></div>
-    <div class="recipe"><span class="voice en">"chamfer bottom edges 0.5mm"</span><span class="voice de">"Unterkanten 0.5mm anfasen"</span><div class="params en">elephant foot compensation</div><div class="params de">Elefantenfuss-Kompensation</div></div>
-  </div>
-
-  <!-- Organizer -->
-  <div class="recipe-group rg-organizer">
-    <div class="recipe-group-title">
-      <span class="en">Organizer / Modular</span><span class="de">Organizer / Modular</span>
-    </div>
-    <div class="recipe"><span class="voice en">"make 2x3 Gridfinity bin height 3 units"</span><span class="voice de">"2x3 Gridfinity-Box Höhe 3 Einheiten"</span><div class="params en">42mm grid, dividers, stacking lip</div><div class="params de">42mm Raster, Trennwände, Stapellippe</div></div>
-    <div class="recipe"><span class="voice en">"make Gridfinity baseplate 4x4"</span><span class="voice de">"Gridfinity-Grundplatte 4x4"</span><div class="params en">magnet holes 6x2mm, screw holes</div><div class="params de">Magnetlöcher 6x2mm, Schraubenlöcher</div></div>
-  </div>
-
-  <!-- Articulation -->
-  <div class="recipe-group rg-mechanical">
-    <div class="recipe-group-title">
-      <span class="en">Articulation Joints</span><span class="de">Gelenke</span>
-    </div>
-    <div class="recipe"><span class="voice en">"make medium ball-and-socket joint"</span><span class="voice de">"mittleres Kugelgelenk erstellen"</span><div class="params en">S: 6mm, M: 10mm, L: 14mm ball</div><div class="params de">S: 6mm, M: 10mm, L: 14mm Kugel</div></div>
-    <div class="recipe"><span class="voice en">"make ratchet joint 12 click stops"</span><span class="voice de">"Rastgelenk mit 12 Raststufen"</span><div class="params en">teeth count, axle hole, plate thickness</div><div class="params de">Zähne, Achsloch, Plattendicke</div></div>
-    <div class="recipe"><span class="voice en">"make double-hinge knee joint"</span><span class="voice de">"Doppelscharnier-Kniegelenk"</span><div class="params en">3mm pin, upper+link+lower knuckles</div><div class="params de">3mm Stift, Ober+Mittel+Unterknöchel</div></div>
-    <div class="recipe"><span class="voice en">"make swivel joint for waist"</span><span class="voice de">"Drehgelenk für Taille"</span><div class="params en">inner peg + outer sleeve, retention lip</div><div class="params de">Innenstift + Außenhülse, Haltelippe</div></div>
-    <div class="recipe"><span class="voice en">"make friction peg joint 4mm"</span><span class="voice de">"Reibungsstift-Gelenk 4mm"</span><div class="params en">D-shape for controlled friction</div><div class="params de">D-Form für kontrollierte Reibung</div></div>
-  </div>
-
-  <!-- Curved Panels -->
-  <div class="recipe-group rg-assembly">
-    <div class="recipe-group-title">
-      <span class="en">Curved Panels</span><span class="de">Gewölbte Paneele</span>
-    </div>
-    <div class="recipe"><span class="voice en">"create curved panel 60mm wide 90 degrees"</span><span class="voice de">"gewölbtes Paneel 60mm breit 90 Grad"</span><div class="params en">radius, angle, thickness, bmesh spin</div><div class="params de">Radius, Winkel, Dicke, bmesh Spin</div></div>
-    <div class="recipe"><span class="voice en">"create shoulder pauldron 120 degrees"</span><span class="voice de">"Schulterpanzer 120 Grad erstellen"</span><div class="params en">r=35mm, w=70mm, 2mm thick</div><div class="params de">r=35mm, b=70mm, 2mm dick</div></div>
-    <div class="recipe"><span class="voice en">"create tapered armor panel"</span><span class="voice de">"konisches Rüstungspaneel erstellen"</span><div class="params en">wider top, narrower bottom, curved</div><div class="params de">oben breiter, unten schmaler, gewölbt</div></div>
-    <div class="recipe"><span class="voice en">"create curved tube 90 degrees radius 30mm"</span><span class="voice de">"gebogenes Rohr 90 Grad Radius 30mm"</span><div class="params en">structural arc, handle, frame</div><div class="params de">Strukturbogen, Griff, Rahmen</div></div>
-    <div class="recipe"><span class="voice en">"add overlap lip to panel edge"</span><span class="voice de">"Überlappungslippe an Paneelkante"</span><div class="params en">2mm inward lip for layered armor</div><div class="params de">2mm Lippe nach innen für Schichtung</div></div>
-  </div>
-
-  <!-- Surface Detail -->
-  <div class="recipe-group rg-structure">
-    <div class="recipe-group-title">
-      <span class="en">Surface Detail</span><span class="de">Oberflächendetails</span>
-    </div>
-    <div class="recipe"><span class="voice en">"engrave panel line 30mm long"</span><span class="voice de">"Paneellinie 30mm lang eingravieren"</span><div class="params en">0.3mm deep, 0.4mm wide (1 nozzle)</div><div class="params de">0.3mm tief, 0.4mm breit (1 Düse)</div></div>
-    <div class="recipe"><span class="voice en">"add raised rivet detail"</span><span class="voice de">"erhabenes Nietendetail hinzufügen"</span><div class="params en">2mm dia, 0.4mm raised, hex shape</div><div class="params de">2mm Ø, 0.4mm erhaben, Sechskant</div></div>
-    <div class="recipe"><span class="voice en">"add magnet pocket 6x3mm"</span><span class="voice de">"Magnettasche 6x3mm hinzufügen"</span><div class="params en">6x3 / 8x3 / 10x2mm disc magnet</div><div class="params de">6x3 / 8x3 / 10x2mm Scheibenmagnet</div></div>
-    <div class="recipe"><span class="voice en">"add countersunk M3 hole"</span><span class="voice de">"M3-Senkschraubloch hinzufügen"</span><div class="params en">flush bolt head, conical recess</div><div class="params de">Bündiger Kopf, konische Senkung</div></div>
-  </div>
-
-  <!-- Organic Geometry -->
-  <div class="recipe-group rg-mechanical">
-    <div class="recipe-group-title">
-      <span class="en">Organic Geometry</span><span class="de">Organische Geometrie</span>
-    </div>
-    <div class="recipe"><span class="voice en">"create organic tube along bezier curve"</span><span class="voice de">"organisches Rohr entlang Bezierkurve"</span><div class="params en">curve path, bevel depth, cap fill</div><div class="params de">Kurvenpfad, Abschrägungstiefe</div></div>
-    <div class="recipe"><span class="voice en">"create smooth dome with subdivision"</span><span class="voice de">"glatte Kuppel mit Unterteilung"</span><div class="params en">control cage + subsurf level 2-3</div><div class="params de">Steuergitter + Subsurf Stufe 2-3</div></div>
-    <div class="recipe"><span class="voice en">"loft between circle and square"</span><span class="voice de">"Übergang von Kreis zu Quadrat"</span><div class="params en">two profiles, smooth bridge surface</div><div class="params de">zwei Profile, glatte Brücke</div></div>
-    <div class="recipe"><span class="voice en">"smooth the mesh"</span><span class="voice de">"Mesh glätten"</span><div class="params en">smooth modifier, factor, iterations</div><div class="params de">Glättungsmodifier, Faktor, Iterationen</div></div>
-    <div class="recipe"><span class="voice en">"shrinkwrap detail onto curved panel"</span><span class="voice de">"Detail auf gewölbtes Paneel projizieren"</span><div class="params en">project flat mesh onto curved target</div><div class="params de">flaches Mesh auf Kurve projizieren</div></div>
-  </div>
-
-  <!-- Production -->
-  <div class="recipe-group rg-enclosure">
-    <div class="recipe-group-title">
-      <span class="en">Production & Assembly</span><span class="de">Produktion & Montage</span>
-    </div>
-    <div class="recipe"><span class="voice en">"add keyed alignment pin 6mm"</span><span class="voice de">"Führungsstift 6mm mit D-Profil"</span><div class="params en">D-shape prevents rotation, snug fit</div><div class="params de">D-Form verhindert Drehung</div></div>
-    <div class="recipe"><span class="voice en">"split part at 50mm height with zigzag"</span><span class="voice de">"Teil bei 50mm mit Zickzack teilen"</span><div class="params en">interlocking seam for large parts</div><div class="params de">Verzahnungsnaht für große Teile</div></div>
-    <div class="recipe"><span class="voice en">"add 6mm steel rod sleeve"</span><span class="voice de">"6mm Stahlstab-Hülse hinzufügen"</span><div class="params en">3/4/6/8mm rod, snug fit channel</div><div class="params de">3/4/6/8mm Stab, Presspassung</div></div>
-    <div class="recipe"><span class="voice en">"export all parts as STL"</span><span class="voice de">"alle Teile als STL exportieren"</span><div class="params en">individual file per mesh object</div><div class="params de">einzelne Datei pro Objekt</div></div>
-    <div class="recipe"><span class="voice en">"send to slicer" or SLICE button / F3</span><span class="voice de">"an Slicer senden" oder SLICE-Taste / F3</span><div class="params en">exports active object → opens PrusaSlicer</div><div class="params de">exportiert aktives Objekt → öffnet PrusaSlicer</div></div>
-  </div>
-
-  <!-- Assembly Testing -->
-  <div class="recipe-group rg-hardware">
-    <div class="recipe-group-title">
-      <span class="en">Assembly Testing</span><span class="de">Baugruppen-Test</span>
-    </div>
-    <div class="recipe"><span class="voice en">"load full assembly"</span><span class="voice de">"ganze Baugruppe laden"</span><div class="params en">imports all latest parts from VPS</div><div class="params de">importiert alle neuesten Teile vom VPS</div></div>
-    <div class="recipe"><span class="voice en">"check interference between A and B"</span><span class="voice de">"Kollision zwischen A und B prüfen"</span><div class="params en">boolean intersect → red overlap volume</div><div class="params de">Boolean-Schnitt → rotes Überlappungsvolumen</div></div>
-    <div class="recipe"><span class="voice en">"check clearance at knee joint"</span><span class="voice de">"Spiel am Kniegelenk prüfen"</span><div class="params en">measures gap between mating surfaces (mm)</div><div class="params de">misst Spalt zwischen Kontaktflächen (mm)</div></div>
-    <div class="recipe"><span class="voice en">"cross-section at 500mm"</span><span class="voice de">"Querschnitt bei 500mm"</span><div class="params en">bisects assembly — shows internal fit (destructive!)</div><div class="params de">schneidet Baugruppe — zeigt innere Passung (destruktiv!)</div></div>
-    <div class="recipe"><span class="voice en">"test range of motion on right knee"</span><span class="voice de">"Bewegungsbereich rechtes Knie testen"</span><div class="params en">rotates joint through range, reports collisions</div><div class="params de">dreht Gelenk durch Bereich, meldet Kollisionen</div></div>
-    <div class="recipe"><span class="voice en">"check balance"</span><span class="voice de">"Balance prüfen"</span><div class="params en">center of gravity vs footprint → stable/unstable</div><div class="params de">Schwerpunkt vs Standfläche → stabil/instabil</div></div>
-  </div>
-
+<div class="rg-organic"><div class="r-group-title">Organic / Organisch</div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Bezier tube</span><span class="label de">Bezier-Rohr</span><span class="voice">create organic tube along bezier curve</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Subdivision dome</span><span class="label de">Unterteilungs-Kuppel</span><span class="voice">create smooth dome with subdivision</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Lofted surface</span><span class="label de">Übergangsform</span><span class="voice">loft between circle and square</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Smooth mesh</span><span class="label de">Mesh glätten</span><span class="voice">smooth the mesh</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Shrinkwrap detail</span><span class="label de">Projektion auf Fläche</span><span class="voice">shrinkwrap detail onto curved panel</span></div>
 </div>
 
-<!-- ============ TOLERANCE BAR ============ -->
-<div class="tolerance-bar">
-  <div class="tol-label">
-    <span class="en">Prusa MK3 Tolerances (0.4mm nozzle) — clearance per side:</span>
-    <span class="de">Prusa MK3 Toleranzen (0.4mm Düse) — Spiel pro Seite:</span>
-  </div>
-  <div class="tol-item">
-    <div class="tol-name">Sliding</div>
-    <div class="tol-val">0.25mm</div>
-    <div class="tol-use en">Lids, drawers</div><div class="tol-use de">Deckel, Schubladen</div>
-  </div>
-  <div class="tol-item">
-    <div class="tol-name">Snug</div>
-    <div class="tol-val">0.15mm</div>
-    <div class="tol-use en">Click-together</div><div class="tol-use de">Klick-Verbindung</div>
-  </div>
-  <div class="tol-item">
-    <div class="tol-name">Press</div>
-    <div class="tol-val">0.05mm</div>
-    <div class="tol-use en">Permanent join</div><div class="tol-use de">Dauerverbindung</div>
-  </div>
-  <div class="tol-item">
-    <div class="tol-name">Loose</div>
-    <div class="tol-val">0.40mm</div>
-    <div class="tol-use en">Hinges, pivots</div><div class="tol-use de">Scharniere</div>
-  </div>
+<div class="rg-surf"><div class="r-group-title">Surface Detail / Oberfläche</div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Panel line</span><span class="label de">Paneellinie</span><span class="voice">engrave panel line 30mm long</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Raised rivet</span><span class="label de">Erhabene Niete</span><span class="voice">add raised rivet detail</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Reinforcement ribs</span><span class="label de">Verstärkungsrippen</span><span class="voice">add 4 reinforcement ribs 1.2mm thick</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Fillet inside corners</span><span class="label de">Innenkanten abrunden</span><span class="voice">fillet inside corners 2mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Bottom chamfer</span><span class="label de">Unterkante anfasen</span><span class="voice">chamfer bottom edges 0.5mm</span></div>
 </div>
 
-<div class="footer">
-  3DPrintVoice v0.4.0 | GPL-3.0 | Roland Preisach 2026 |
-  <span class="en">Print this poster: File > Print (A2 landscape recommended)</span>
-  <span class="de">Poster drucken: Datei > Drucken (A2 Querformat empfohlen)</span>
+<div class="rg-asm"><div class="r-group-title">Assembly / Montage</div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Peg + hole (snug)</span><span class="label de">Stift + Loch</span><span class="voice">make peg and hole snug fit 6mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Dovetail rail</span><span class="label de">Schwalbenschwanz</span><span class="voice">add dovetail rail 80mm long</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">T-slot channel</span><span class="label de">T-Nut-Kanal</span><span class="voice">add T-slot channel for M4</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Keyed D-pin</span><span class="label de">Führungsstift (D)</span><span class="voice">add keyed alignment pin 6mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Split with zigzag</span><span class="label de">Zickzack-Teilung</span><span class="voice">split part at 50mm height with zigzag</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Threaded cap</span><span class="label de">Schraubdeckel</span><span class="voice">make threaded cap diameter 30mm</span></div>
 </div>
+
+<div class="rg-test"><div class="r-group-title">Assembly Test / Prüfung</div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Load full assembly</span><span class="label de">Ganze Baugruppe laden</span><span class="voice">load full assembly</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Check interference</span><span class="label de">Kollision prüfen</span><span class="voice">check interference between A and B</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Check clearance</span><span class="label de">Spiel messen</span><span class="voice">check clearance at knee joint</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Cross-section</span><span class="label de">Querschnitt</span><span class="voice">cross-section at 500mm</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Range of motion</span><span class="label de">Bewegungsbereich</span><span class="voice">test range of motion on right knee</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Check balance</span><span class="label de">Balance prüfen</span><span class="voice">check balance</span></div>
+</div>
+
+<div class="rg-prod"><div class="r-group-title">Production / Workflow</div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Import from sync</span><span class="label de">Vom VPS importieren</span><span class="voice">import LEG_THIGH_R</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Save iteration</span><span class="label de">Version speichern</span><span class="voice">save iteration</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Mark as final</span><span class="label de">Als fertig markieren</span><span class="voice">mark as final</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Reopen for changes</span><span class="label de">Zur Bearbeitung öffnen</span><span class="voice">reopen for changes</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Batch export all</span><span class="label de">Alle exportieren</span><span class="voice">export all parts as STL</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Sync VPS (F4)</span><span class="label de">VPS synchronisieren (F4)</span><span class="voice">sync designs</span></div>
+  <div class="cmd" onclick="send(this)"><span class="label en">Archive old drafts</span><span class="label de">Alte Entwürfe archivieren</span><span class="voice">archive old drafts</span></div>
+</div>
+
+</div></div>
+
+<!-- TOLERANCES -->
+<div class="tol">
+  <div class="tol-label"><span class="en">Prusa MK3 Tolerances (0.4mm nozzle):</span><span class="de">Prusa MK3 Toleranzen (0.4mm Düse):</span></div>
+  <div class="tol-item"><div class="n">Sliding</div><div class="v">0.25mm</div><div class="u en">Lids, drawers</div><div class="u de">Deckel, Schubladen</div></div>
+  <div class="tol-item"><div class="n">Snug</div><div class="v">0.15mm</div><div class="u en">Click-fit</div><div class="u de">Klick-Passung</div></div>
+  <div class="tol-item"><div class="n">Press</div><div class="v">0.05mm</div><div class="u en">Permanent</div><div class="u de">Dauerhaft</div></div>
+  <div class="tol-item"><div class="n">Loose</div><div class="v">0.40mm</div><div class="u en">Hinges</div><div class="u de">Scharniere</div></div>
+</div>
+
+<div class="keys">
+  <kbd>F1</kbd> Mic &nbsp; <kbd>F2</kbd> Reference &nbsp; <kbd>F3</kbd> Slicer &nbsp; <kbd>F4</kbd> Sync &nbsp; <kbd>↑↓</kbd> History &nbsp; <kbd>Enter</kbd> Send
+</div>
+
+<div class="ft">3DPrintVoice v0.4.0 | GPL-3.0 | Roland Preisach 2026</div>
 
 <script>
-function setLang(lang) {
-  document.querySelectorAll('.en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
-  document.querySelectorAll('.de').forEach(el => el.style.display = lang === 'de' ? '' : 'none');
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-  document.getElementById('btn-de').classList.toggle('active', lang === 'de');
-  document.documentElement.lang = lang;
-  try { localStorage.setItem('3dpv-lang', lang); } catch(e) {}
+const API='http://127.0.0.1:6790/command';
+function send(el){
+  const cmd=el.querySelector('.voice').textContent;
+  fetch(API,{method:'POST',body:cmd}).then(()=>{
+    const t=document.getElementById('toast');t.style.display='block';
+    setTimeout(()=>t.style.display='none',1500);
+  }).catch(()=>{
+    navigator.clipboard.writeText(cmd);
+    const t=document.getElementById('toast');t.textContent='Copied to clipboard';
+    t.style.display='block';setTimeout(()=>{t.style.display='none';t.textContent='Sent to 3DPrintVoice'},1500);
+  });
 }
-// Init — restore saved language preference
-setLang((function() { try { return localStorage.getItem('3dpv-lang') || 'en'; } catch(e) { return 'en'; } })());
+function setLang(l){
+  document.querySelectorAll('.en').forEach(e=>e.style.display=l==='en'?'':'none');
+  document.querySelectorAll('.de').forEach(e=>e.style.display=l==='de'?'':'none');
+  document.getElementById('ben').classList.toggle('on',l==='en');
+  document.getElementById('bde').classList.toggle('on',l==='de');
+  document.documentElement.lang=l;
+  try{localStorage.setItem('3dpv-lang',l)}catch(e){}
+}
+setLang((function(){try{return localStorage.getItem('3dpv-lang')||'en'}catch(e){return'en'}})());
 </script>
-
 </body>
 </html>

@@ -533,14 +533,75 @@ ts.snap_elements = {snap_set}
             self.root.after(0, self._set_result,
                             f"Sync error: {str(e)[:80]}", FG_ERROR)
 
+    _ref_server_started = False
+    _REF_PORT = 6790
+
+    def _start_ref_server(self):
+        """Start a tiny HTTP server for the command reference + command injection."""
+        if self._ref_server_started:
+            return
+        from http.server import HTTPServer, BaseHTTPRequestHandler
+        import urllib.parse
+        app = self
+
+        class RefHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path == "/" or self.path == "/ref":
+                    ref_path = Path(__file__).resolve().parent.parent / "docs" / "command-reference.html"
+                    if ref_path.exists():
+                        self.send_response(200)
+                        self.send_header("Content-Type", "text/html; charset=utf-8")
+                        self.end_headers()
+                        self.wfile.write(ref_path.read_bytes())
+                    else:
+                        self.send_response(404)
+                        self.end_headers()
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+
+            def do_POST(self):
+                if self.path == "/command":
+                    length = int(self.headers.get("Content-Length", 0))
+                    body = self.rfile.read(length).decode("utf-8")
+                    cmd = urllib.parse.unquote(body)
+                    # Inject into app text field
+                    app.root.after(0, app._inject_command, cmd)
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/plain")
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.end_headers()
+                    self.wfile.write(b"OK")
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+
+            def do_OPTIONS(self):
+                self.send_response(200)
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Access-Control-Allow-Methods", "POST")
+                self.send_header("Access-Control-Allow-Headers", "Content-Type")
+                self.end_headers()
+
+            def log_message(self, fmt, *args):
+                pass  # suppress logging
+
+        server = HTTPServer(("127.0.0.1", self._REF_PORT), RefHandler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self._ref_server_started = True
+
+    def _inject_command(self, cmd):
+        """Insert a command into the text field, ready for editing."""
+        self._input.delete(0, tk.END)
+        self._input.insert(0, cmd)
+        self._input.focus_set()
+        self._input.icursor(tk.END)
+
     def _open_reference(self):
-        """Open the command reference HTML in the default browser."""
-        ref_path = Path(__file__).resolve().parent.parent / "docs" / "command-reference.html"
-        if ref_path.exists():
-            subprocess.Popen(["xdg-open", str(ref_path)],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        else:
-            self._set_result("Reference file not found", FG_ERROR)
+        """Open the command reference in browser via local HTTP server."""
+        self._start_ref_server()
+        subprocess.Popen(["xdg-open", f"http://127.0.0.1:{self._REF_PORT}/ref"],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def _send_command(self):
         """Send typed text to LLM → Blender."""
