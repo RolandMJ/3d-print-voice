@@ -30,3 +30,6 @@ venv/
 
 # Claude Code
 .claude/
+
+# Per-project Elon-counterpart off-switch (local toggle)
+.elon-off
